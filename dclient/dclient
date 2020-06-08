@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+import yum
+import json
+import pprint
+import platform
+import requests
+import argparse
+
+
+def get_yum_id():
+    yh = yum.history.YumHistory(root='/', db_path='/var/lib/yum/history', releasever=None)
+    return(yh.last())
+
+
+def main(args):
+    hostname = platform.node()
+    TOKEN = ""
+    headers = {"Authorization": TOKEN}
+    r = requests.get("https://deployment.unifiedlayer.com/api/1.0.0/server/hostname/"+hostname, headers=headers, stream=False, verify=False)
+    server = r.json()
+    server_id = server['body']['server']['id']
+
+    deploymentId = args.deployment_id
+    r = requests.get("https://deployment.unifiedlayer.com/api/1.0.0/deployment/id/"+deploymentId, headers=headers, stream=False, verify=False)
+    deployment = r.json()
+    action = deployment['body']['deployment']['action']
+    output = "success"
+    yum_transaction_id = "test"
+    yum_rollback_id = "test"
+    print(get_yum_id())
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--deployment_id', action='store', type=str, required=True)
+    args = parser.parse_args()
+    main(args)
