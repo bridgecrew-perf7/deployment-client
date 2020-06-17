@@ -1,38 +1,95 @@
 #!/usr/bin/env python
 
-import yum
-import json
-import pprint
+import falcon
+from falcon_auth import FalconAuthMiddleware, JWTAuthBackend
+
+import gunicorn
+from gunicorn.app.wsgiapp import WSGIApplication
+
 import platform
 import requests
-import argparse
+from resources.healthcheck import *
+from config import Config
 
 
-def get_yum_id():
-    yh = yum.history.YumHistory(root='/', db_path='/var/lib/yum/history', releasever=None)
-    return(yh.last())
+import multiprocessing
+def number_of_workers():
+    workers = (multiprocessing.cpu_count() * 2) + 1
+    return workers
 
 
-def main(args):
-    hostname = platform.node()
-    TOKEN = ""
-    headers = {"Authorization": TOKEN}
-    r = requests.get("https://deployment.unifiedlayer.com/api/1.0.0/server/hostname/"+hostname, headers=headers, stream=False, verify=False)
-    server = r.json()
-    server_id = server['body']['server']['id']
+def json_serializer(req, resp, exception):
+    representation = exception.to_json()
+    resp.body = representation
+    resp.content_type = "application/json"
+    resp.append_header("Vary", "Accept")
 
-    deploymentId = args.deployment_id
-    r = requests.get("https://deployment.unifiedlayer.com/api/1.0.0/deployment/id/"+deploymentId, headers=headers, stream=False, verify=False)
-    deployment = r.json()
-    action = deployment['body']['deployment']['action']
-    output = "success"
-    yum_transaction_id = "test"
-    yum_rollback_id = "test"
-    print(get_yum_id())
+
+def register_client():
+    if not Config.TOKEN:
+        data = {
+            "hostname":platform.node(),
+            "username":"newhost",
+            "password":"newhost"
+        }
+        r = requests.post("https://deployment.unifiedlayer.com/api/1.0.0/register", data=data)
+        TOKEN = r.content
+        with open("/etc/default/dclient", "a") as file:
+            file.write("TOKEN="+TOKEN)
+
+
+class DClient(WSGIApplication):
+
+    def __init__(self, app, options=None):
+        self.options = options or {}
+        self.application = app
+
+        super().__init__()
+
+    def load_config(self):
+        config = {key: value for key, value in self.options.items()
+                  if key in self.cfg.settings and value is not None}
+        for key, value in config.items():
+            self.cfg.set(key.lower(), value)
+
+    def load(self):
+        return self.application
+
+
+def create_app():
+    register_client():
+
+    api = application = falcon.API(middleware=[SQLAlchemySessionManager(Session)])
+    api.set_error_serializer(json_serializer)
+
+    healthcheck = HealthCheck()
+    api.add_route("/", healthcheck)
+
+    versionlock = Versionlock()
+    api.add_route("/api/v1/versionlock", versionlock)
+
+    rollout = Rollout()
+    api.add_route("/api/v1/rollout", rollout)
+
+    rollback = Rollback()
+    api.add_route("/api/v1/rollback", rollback)
+
+    return api
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--deployment_id', action='store', type=str, required=True)
-    args = parser.parse_args()
-    main(args)
+    options = {
+        "bind":"unix:/tmp/dclient.socket",
+        "workers":number_of_workers(),
+        "reload-engine": "auto",
+        "spew":False,
+        "access_log":"/var/log/dclient/access.log",
+        "access-logformat":"%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"",
+        "disable-redirect-access-to-syslog":True,
+        "error_log":"/var/log/dclient/error.log",
+        "log-level":"debug",
+        "capture-output":True,
+        "worker_class":"gunicorn.workers.sync.SyncWorker"
+    }
+    DClient(create_app(), options).run()
+
