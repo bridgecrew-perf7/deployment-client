@@ -8,6 +8,8 @@ pytest = '*'
 
 [packages]
 requests = '*'
+falcon = "*"
+gunicorn = "*"
 
 [requires]
 python_version = "2.7"

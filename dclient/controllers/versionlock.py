@@ -17,7 +17,7 @@ def post_versionlock(self, data):
             "status": falcon.HTTP_201
         }
         return response_object
-    else:
+    except:
         response_object = {
             "body": {
                 "status": "fail",
@@ -30,21 +30,21 @@ def post_versionlock(self, data):
 
 def get_versionlock(self):
     try:
-        with open("/etc/yum/pluginconf.d/versionlock.list") as file
+        with open("/etc/yum/pluginconf.d/versionlock.list") as file:
             data = file.read().split(",")
         response_object = {
             "body": {
                 "status": "success",
-                "message": "Versionlock successfully retrieved",
+                "message": "Versionlock list successfully retrieved",
                 "data": json.dumps(data),
-            }
+            },
             "status": falcon.HTTP_200
         }
         return response_object
     except:
         response_object = {
             "body": {
-                "message": "Failed to GET healthcheck",
+                "message": "Failed to GET versionlock list",
             },
             "status": falcon.HTTP_409
         }

@@ -6,7 +6,7 @@ import falcon
 def install_pkgs(data):
     yb=yum.YumBase()
     searchlist=["name"]
-    arg=data["packages"]
+    arg=data
     matches = yb.searchGenerator(searchlist, arg)
     for (package, matched_value) in matches:
         yb.install(package)
@@ -22,9 +22,15 @@ def get_yum_transaction_id():
 
 def post_rollout(self, data):
     try:
-        install_pkgs(data)
+        install_pkgs(data["packages"])
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
+        if buildall in data:
+            os.system("/var/hp/common/bin/buildall -s")
+        os.system("/bin/systemctl restart httpd")
+        stat = os.system("/bin/systemctl status httpd.service")
+        if stat != 0:
+            raise Exception(stat)
         response_object = {
             "body": {
                 "status": "success",

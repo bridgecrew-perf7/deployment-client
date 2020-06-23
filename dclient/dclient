@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 
 import falcon
-from falcon_auth import FalconAuthMiddleware, JWTAuthBackend
-
+import requests
+import platform
 import gunicorn
 from gunicorn.app.wsgiapp import WSGIApplication
 
-import platform
-import requests
-from resources.healthcheck import *
-from config import Config
+from dclient.resources.rollout import Rollout
+from dclient.resources.rollback import Rollback
+from dclient.resources.versionlock import VersionLock
+from dclient.resources.healthcheck import HealthCheck
+from dclient.config import Config
 
 
 import multiprocessing
@@ -32,7 +33,7 @@ def register_client():
             "username":"newhost",
             "password":"newhost"
         }
-        r = requests.post("https://deployment.unifiedlayer.com/api/1.0.0/register", data=data)
+        r = requests.post("https://deployment.unifiedlayer.com/api/1.0.0/register", data=data, verify=False)
         TOKEN = r.content
         with open("/etc/default/dclient", "a") as file:
             file.write("TOKEN="+TOKEN)
@@ -43,8 +44,7 @@ class DClient(WSGIApplication):
     def __init__(self, app, options=None):
         self.options = options or {}
         self.application = app
-
-        super().__init__()
+        super(WSGIApplication, self).__init__()
 
     def load_config(self):
         config = {key: value for key, value in self.options.items()
@@ -57,15 +57,15 @@ class DClient(WSGIApplication):
 
 
 def create_app():
-    register_client():
+    register_client()
 
-    api = application = falcon.API(middleware=[SQLAlchemySessionManager(Session)])
+    api = application = falcon.API()
     api.set_error_serializer(json_serializer)
 
     healthcheck = HealthCheck()
     api.add_route("/", healthcheck)
 
-    versionlock = Versionlock()
+    versionlock = VersionLock()
     api.add_route("/api/v1/versionlock", versionlock)
 
     rollout = Rollout()
@@ -79,12 +79,12 @@ def create_app():
 
 if __name__ == "__main__":
     options = {
-        "bind":"unix:/tmp/dclient.socket",
+        "bind": "%s:%s" % ("0.0.0.0", "8000"),
         "workers":number_of_workers(),
         "reload-engine": "auto",
         "spew":False,
         "access_log":"/var/log/dclient/access.log",
-        "access-logformat":"%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"",
+        "access-logformat":"%(h)s %(l)s %(u)s %(t)s '%(r)s' %(s)s %(b)s '%(f)s' '%(a)s'",
         "disable-redirect-access-to-syslog":True,
         "error_log":"/var/log/dclient/error.log",
         "log-level":"debug",

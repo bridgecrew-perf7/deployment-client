@@ -1,10 +1,9 @@
 import falcon
-from controllers.rollback import *
+from dclient.controllers.rollback import *
 
 
 class Rollback(object):
     def on_post(self, req, resp):
-        self.session = req.context.db_session
-        response = post_rollback(self)
+        response = post_rollback(self, data=req.media)
         resp.body = json.dumps(response["body"])
         resp.status = response["status"]

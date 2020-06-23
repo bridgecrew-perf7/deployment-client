@@ -15,11 +15,11 @@ def post_rollback(self, data):
             "status": falcon.HTTP_201
         }
         return response_object
-    else:
+    except:
         response_object = {
             "body": {
                 "status": "fail",
-                "message": "POST healthcheck failed.",
+                "message": "Deployment rollback failed.",
             },
             "status": falcon.HTTP_409
         }
