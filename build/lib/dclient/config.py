@@ -11,8 +11,7 @@ class Config:
             pass
         with open("/var/log/dclient/error.log", "w") as file:
             pass
-    
-    TOKEN = None
+
     if os.path.exists("/etc/default/dclient"):
         load_dotenv("/etc/default/dclient")
         TOKEN = os.getenv("TOKEN")

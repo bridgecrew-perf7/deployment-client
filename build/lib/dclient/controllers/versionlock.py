@@ -3,10 +3,10 @@ import json
 import falcon
 import subprocess
 
-
 def post_versionlock(self, data):
     try:
-        for pkg in data["versionlock"]:
+        os.system("yum versionlock clear")
+        for pkg in data:
             os.system("yum versionlock add "+pkg)
         response_object = {
             "body": {

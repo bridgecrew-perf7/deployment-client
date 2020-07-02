@@ -2,7 +2,7 @@
 
 import falcon
 import requests
-import socket
+import platform
 import gunicorn
 from gunicorn.app.wsgiapp import WSGIApplication
 
@@ -27,22 +27,16 @@ def json_serializer(req, resp, exception):
 
 
 def register_client():
-    hostname = socket.gethostname()
-    ip = socket.gethostbyname(hostname)
     if not Config.TOKEN:
         data = {
-            "hostname":Config.HOSTNAME,
-            "ip":Config.IP,
-            "state":Config.STATE,
-            "group":Config.GROUP,
-            "environment":Config.ENVIRONMENT
+            "hostname":platform.node(),
+            "username":"newhost",
+            "password":"newhost"
         }
-        headers = {"Authorization": Config.REG_TOKEN}
-        r = requests.post("https://deployment.unifiedlayer.com/api/1.0.0/server", headers=headers, data=data, verify=False)
-        resp = r.json()
-        if "TOKEN" in resp:
-            with open("/etc/default/dclient", "a") as file:
-                file.write("TOKEN={}".format(resp["TOKEN"]))
+        r = requests.post("https://deployment.unifiedlayer.com/api/1.0.0/register", data=data, verify=False)
+        TOKEN = r.content
+        with open("/etc/default/dclient", "a") as file:
+            file.write("TOKEN="+TOKEN)
 
 
 class DClient(WSGIApplication):
@@ -95,8 +89,7 @@ if __name__ == "__main__":
         "error_log":"/var/log/dclient/error.log",
         "log-level":"debug",
         "capture-output":True,
-        "worker_class":"sync",
-        "timeout":600
+        "worker_class":"gunicorn.workers.sync.SyncWorker"
     }
     DClient(create_app(), options).run()
 
