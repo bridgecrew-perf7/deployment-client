@@ -1,4 +1,0 @@
-python-dotenv==0.13.0
-requests==2.6.0
-falcon==2.0.0
-gunicorn==19.10.0
