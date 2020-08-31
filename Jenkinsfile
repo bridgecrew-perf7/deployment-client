@@ -40,12 +40,12 @@ pipeline {
     }
     stage("Sign RPM with alpha key") {
         steps {
-            sh "sudo -i -u mirroradmin /home/mirroradmin/rpm-sign-alpha.sh *.rpm"
+            sh "sudo -i -u mirroradmin /home/mirroradmin/rpm-sign-alpha.sh dist/*.rpm"
         }
     }
     stage("Deploy to primemirror web root") {
         steps {
-            sh "sudo -u mirroradmin cp *.rpm /var/www/html/mirrors/alpha/centos7/noarch/"
+            sh "sudo -u mirroradmin cp dist/*.noarch.rpm /var/www/html/mirrors/alpha/centos7/noarch/"
         }
     }
     stage("Update alpha yum repo metadata") {
