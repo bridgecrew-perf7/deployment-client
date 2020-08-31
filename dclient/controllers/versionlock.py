@@ -1,52 +1,39 @@
 import os
-import json
-import falcon
 import subprocess
 
 
-def post_versionlock(self, data):
+def post_versionlock(data):
     try:
         for pkg in data["versionlock"]:
             os.system("yum versionlock add "+pkg)
-        response_object = {
-            "body": {
-                "status": "success",
-                "message": "New versionlock list successfully created.",
-            },
-            "status": falcon.HTTP_201
+        response = {
+            "status": "success",
+            "message": "New versionlock list successfully created.",
         }
-        return response_object
+        return response, 201
     except:
-        response_object = {
-            "body": {
-                "status": "fail",
-                "message": "POST versionlock list failed.",
-            },
-            "status": falcon.HTTP_409
+        response = {
+            "status": "fail",
+            "message": "POST versionlock list failed.",
         }
-        return response_object
+        return response, 409
 
 
-def get_versionlock(self):
-    #try:
-    versionlock = subprocess.check_output("yum versionlock list", shell=True)
-    versionlock = versionlock.splitlines()
-    versionlock.pop(0)
-    versionlock.pop()
-    response_object = {
-        "body": {
+def get_versionlock():
+    try:
+        versionlock = subprocess.check_output("yum versionlock list", shell=True)
+        versionlock = versionlock.splitlines()
+        versionlock.pop(0)
+        versionlock.pop()
+        response = {
             "status": "success",
             "message": "Versionlock list successfully retrieved",
             "versionlock": versionlock,
-        },
-        "status": falcon.HTTP_200
-    }
-    return response_object
-   # except:
-   #     response_object = {
-   #         "body": {
-   #             "message": "Failed to GET versionlock list",
-   #         },
-   #         "status": falcon.HTTP_409
-   #     }
-   #     return response_object
+        }
+        return response, 200
+    except:
+        response = {
+            "status": "failure",
+            "message": "Failed to GET versionlock list"
+        }
+        return response, 409

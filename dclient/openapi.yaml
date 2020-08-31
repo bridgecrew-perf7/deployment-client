@@ -1,0 +1,152 @@
+openapi: 3.0.0
+info:
+  title: Bluehost Deployment Client
+  description: the deployment client api
+  contact:
+    email: admin@bluehost.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: /api/1.0.0
+    description: Bluehost Deployment Client
+paths:
+  /:
+    post:
+      summary: create a healthcheck
+      operationId: dclient.controllers.healthcheck.post_healthcheck
+      requestBody:
+        description: Create HealthCheck object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HealthCheck'
+        required: true
+      responses:
+        default:
+          description: successful operation
+    get:
+      summary: get healthcheck
+      operationId: dclient.controllers.healthcheck.get_healthcheck
+      responses:
+        "200":
+          description: health is good
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/HealthCheck'
+  /rollout:
+    post:
+      summary: create a rollout
+      operationId: dclient.controllers.rollout.post_rollout
+      requestBody:
+        description: Create Rollout object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RollOut'
+        required: true
+      responses:
+        default:
+          description: successful operation
+  /rollback:
+    post:
+      summary: create a rollback
+      operationId: dclient.controllers.rollback.post_rollback
+      requestBody:
+        description: Create Rollback object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RollBack'
+        required: true
+      responses:
+        default:
+          description: successful operation
+  /upload:
+    post:
+      summary: create an upload
+      operationId: dclient.controllers.upload.post_upload
+      requestBody:
+        description: Create Upload object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Upload'
+        required: true
+      responses:
+        default:
+          description: successful operation
+  /versionlock:
+    post:
+      summary: create a versionlock
+      operationId: dclient.controllers.versionlock.post_versionlock
+      requestBody:
+        description: Create Versionlock object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionLock'
+        required: true
+      responses:
+        default:
+          description: successful operation
+components:
+  schemas:
+    HealthCheck:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        status:
+          type: string
+          example: good
+        created_at:
+          type: string
+          example: 2020-07-26T17:16:29.051842
+    RollOut:
+      type: object
+      properties:
+        server_id:
+          type: integer
+          example: 1
+        deployment_id:
+          type: integer
+          example: 1
+        action:
+          type: string
+          example: UPDATE
+        output:
+          type: string
+          example: deployment was successful
+        yum_transaction_id:
+          type: integer
+          example: 1
+        yum_rollback_id:
+          type: integer
+          example: 1
+    RollBack:
+      type: object
+      properties:
+        server_id:
+          type: integer
+          example: 1
+        deployment_id:
+          type: integer
+          example: 1
+        action:
+          type: string
+          example: UPDATE
+        output:
+          type: string
+          example: deployment was successful
+        yum_transaction_id:
+          type: integer
+          example: 1
+        yum_rollback_id:
+          type: integer
+          example: 1
