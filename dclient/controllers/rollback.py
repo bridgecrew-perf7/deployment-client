@@ -1,22 +1,21 @@
 import os
-import json
-import falcon
 import requests
+from flask import request
 from dclient.config import Config
 
 
 def get_yum_transaction_id():
-    yh=yum.history.YumHistory()
+    yh = yum.history.YumHistory()
     last = yh.last()
     return last.tid
 
 
-def post_rollback(self, data):
-    print(data)
+def post_rollback():
+    data = request.get_json()
+
     headers = {"Authorization": Config.TOKEN}
-    
     payload = {"hostname": data["hostname"], "state": "updating"}
-    r = requests.patch("https://deployment.unifiedlayer.com/api/1.0.0/server", headers=headers, json=payload, verify=False)
+    requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
     
     try:
         os.system("yum -y history rollback {}".format(data["yum_rollback_id"]))
@@ -31,37 +30,35 @@ def post_rollback(self, data):
         if stat != 0:
             raise Exception(stat)
 
-        payload = {"deployment_id": data["deployment_id"], "action": "Update", "state": "Success", "yum_transaction_id": yum_transaction_id, "yum_rollback_id": yum_rollback_id}
-        r = requests.post("https://deployment.unifiedlayer.com/api/1.0.0/server/history/{}".format(data["hostname"]), headers=headers, json=payload, verify=False)
+        payload = {"deployment_id": data["deployment_id"], "action": "Update", "state": "Success",
+                   "yum_transaction_id": yum_transaction_id, "yum_rollback_id": yum_rollback_id}
+        requests.post("{}/server/history/{}".format(Config.DEPLOYMENT_SERVER_URL, data["hostname"]), headers=headers,
+                      json=payload, verify=False)
 
         payload = {"hostname": data["hostname"], "state": "Active"}
-        r = requests.patch("https://deployment.unifiedlayer.com/api/1.0.0/server", headers=headers, json=payload, verify=False)
+        requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
 
-        response_object = {
-            "body": {
-                "status": "success",
-                "message": "Deployment successfully rolled back.",
-            },
-            "status": falcon.HTTP_201
+        response = {
+            "status": "success",
+            "message": "Deployment successfully rolled back.",
         }
-        return response_object
+        return response, 200
     except Exception as e:
         payload = {"hostname": data["hostname"], "state": "error"}
-        r = requests.patch("https://deployment.unifiedlayer.com/api/1.0.0/server", headers=headers, json=payload, verify=False)
+        requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
         
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
         
-        payload = {"deployment_id": data["deployment_id"], "action": "Update", "state": "Failed", "yum_transaction_id": yum_transaction_id, "yum_rollback_id": yum_rollback_id}
-        r = requests.post("https://deployment.unifiedlayer.com/api/1.0.0/server/history/{}".format(data["hostname"]), headers=headers, json=payload, verify=False)
+        payload = {"deployment_id": data["deployment_id"], "action": "Update", "state": "Failed",
+                   "yum_transaction_id": yum_transaction_id, "yum_rollback_id": yum_rollback_id}
+        requests.post("{}/server/history/{}".format(Config.DEPLOYMENT_SERVER_URL, data["hostname"]), headers=headers,
+                      json=payload, verify=False)
         
-        response_object = {
-            "body": {
-                "status": "fail",
-                "message": "Deployment rollback failed.",
-                "exception": str(e)
-            },
-            "status": falcon.HTTP_409
+        response = {
+            "status": "fail",
+            "message": "Deployment rollback failed.",
+            "exception": str(e)
         }
-        return response_object
+        return response, 409
 

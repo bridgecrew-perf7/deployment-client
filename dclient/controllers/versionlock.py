@@ -1,52 +1,42 @@
 import os
-import json
-import falcon
 import subprocess
+from flask import request
 
 
-def post_versionlock(self, data):
+def post_versionlock():
+    data = request.get_json()
     try:
         for pkg in data["versionlock"]:
             os.system("yum versionlock add "+pkg)
-        response_object = {
-            "body": {
-                "status": "success",
-                "message": "New versionlock list successfully created.",
-            },
-            "status": falcon.HTTP_201
+        response = {
+            "status": "success",
+            "message": "New versionlock list successfully created.",
         }
-        return response_object
-    except:
-        response_object = {
-            "body": {
-                "status": "fail",
-                "message": "POST versionlock list failed.",
-            },
-            "status": falcon.HTTP_409
+        return response, 201
+    except Exception as e:
+        response = {
+            "status": "fail",
+            "message": "POST versionlock list failed.",
+            "exception": e
         }
-        return response_object
+        return response, 409
 
 
-def get_versionlock(self):
-    #try:
-    versionlock = subprocess.check_output("yum versionlock list", shell=True)
-    versionlock = versionlock.splitlines()
-    versionlock.pop(0)
-    versionlock.pop()
-    response_object = {
-        "body": {
+def get_versionlock():
+    try:
+        versionlock = subprocess.check_output("yum versionlock list", shell=True)
+        versionlock = versionlock.splitlines()
+        versionlock.pop(0)
+        versionlock.pop()
+        response = {
             "status": "success",
             "message": "Versionlock list successfully retrieved",
             "versionlock": versionlock,
-        },
-        "status": falcon.HTTP_200
-    }
-    return response_object
-   # except:
-   #     response_object = {
-   #         "body": {
-   #             "message": "Failed to GET versionlock list",
-   #         },
-   #         "status": falcon.HTTP_409
-   #     }
-   #     return response_object
+        }
+        return response, 200
+    except Exception as e:
+        response = {
+            "message": "Failed to GET versionlock list",
+            "exception": e
+        }
+        return response, 409

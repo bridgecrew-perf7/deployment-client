@@ -1,44 +1,26 @@
 #!/usr/bin/python3
 
-import falcon
 import requests
-import socket
-import gunicorn
+from flask import Flask, request
 from gunicorn.app.wsgiapp import WSGIApplication
 
-from dclient.resources.rollout import Rollout
-from dclient.resources.rollback import Rollback
-from dclient.resources.versionlock import VersionLock
-from dclient.resources.healthcheck import HealthCheck
+from dclient.controllers.rollout import post_rollout
+from dclient.controllers.rollback import post_rollback
+from dclient.controllers.healthcheck import get_healthcheck
+from dclient.controllers.versionlock import post_versionlock, get_versionlock
 from dclient.config import Config
 
 
-import multiprocessing
-def number_of_workers():
-    workers = (multiprocessing.cpu_count() * 2) + 1
-    return workers
-
-
-def json_serializer(req, resp, exception):
-    representation = exception.to_json()
-    resp.body = representation
-    resp.content_type = "application/json"
-    resp.append_header("Vary", "Accept")
-
-
-def register_client():
-    hostname = socket.gethostname()
-    ip = socket.gethostbyname(hostname)
+def setup_client():
     if not Config.TOKEN:
         data = {
-            "hostname":Config.HOSTNAME,
-            "ip":Config.IP,
-            "state":Config.STATE,
-            "group":Config.GROUP,
-            "environment":Config.ENVIRONMENT
+            "hostname": Config.HOSTNAME,
+            "ip": Config.IP,
+            "state": Config.STATE,
+            "group": Config.GROUP,
+            "environment": Config.ENVIRONMENT
         }
-        headers = {"Authorization": Config.REG_TOKEN}
-        r = requests.post("https://deployment.unifiedlayer.com/api/1.0.0/server", headers=headers, data=data, verify=False)
+        r = requests.post("{}/server".format(Config.DEPLOYMENT_SERVER_URL), data=data, verify=False)
         resp = r.json()
         if "TOKEN" in resp:
             with open("/etc/default/dclient", "a") as file:
@@ -63,40 +45,53 @@ class DClient(WSGIApplication):
 
 
 def create_app():
-    register_client()
+    setup_client()
 
-    api = application = falcon.API()
-    api.set_error_serializer(json_serializer)
+    app = Flask(__name__)
+    app.config.from_object(Config)
 
-    healthcheck = HealthCheck()
-    api.add_route("/", healthcheck)
+    @app.route("/", methods=["GET"])
+    def healthcheck():
+        if request.method == "GET":
+            return get_healthcheck()
 
-    versionlock = VersionLock()
-    api.add_route("/api/v1/versionlock", versionlock)
+    @app.route("/rollout", methods=["POST"])
+    def rollout():
+        if request.method == "POST":
+            return post_rollout()
 
-    rollout = Rollout()
-    api.add_route("/api/v1/rollout", rollout)
+    @app.route("/rollback", methods=["POST"])
+    def rollback():
+        if request.method == "POST":
+            return post_rollback()
 
-    rollback = Rollback()
-    api.add_route("/api/v1/rollback", rollback)
+    @app.route("/versionlock", methods=["POST"])
+    def versionlock():
+        if request.method == "POST":
+            return post_versionlock()
 
-    return api
+    @app.route("/upload", methods=["POST"])
+    def upload():
+        if request.method == "POST":
+            return post_upload()
+
+    return app
 
 
 if __name__ == "__main__":
     options = {
         "bind": "%s:%s" % ("0.0.0.0", "8000"),
-        "workers":number_of_workers(),
+        "workers": 2,
         "reload-engine": "auto",
-        "spew":False,
-        "access_log":"/var/log/dclient/access.log",
-        "access-logformat":"%(h)s %(l)s %(u)s %(t)s '%(r)s' %(s)s %(b)s '%(f)s' '%(a)s'",
-        "disable-redirect-access-to-syslog":True,
-        "error_log":"/var/log/dclient/error.log",
-        "log-level":"debug",
-        "capture-output":True,
-        "worker_class":"sync",
-        "timeout":600
+        "spew": False,
+        "access_log": "/var/log/dclient/access.log",
+        "access-logformat": "%(h)s %(l)s %(u)s %(t)s '%(r)s' %(s)s %(b)s '%(f)s' '%(a)s'",
+        "disable-redirect-access-to-syslog": True,
+        "error_log": "/var/log/dclient/error.log",
+        "log-level": "debug",
+        "capture-output": True,
+        "worker_class": "sync",
+        "timeout": 600
     }
     DClient(create_app(), options).run()
 
