@@ -1,6 +1,8 @@
 import os
+import yum
 import requests
 from flask import request
+
 from dclient.config import Config
 
 
@@ -12,10 +14,10 @@ def get_yum_transaction_id():
 
 def post_rollback():
     data = request.get_json()
-
     headers = {"Authorization": Config.TOKEN}
     payload = {"hostname": data["hostname"], "state": "updating"}
-    requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
+    r = requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload,
+                       verify=False)
     
     try:
         os.system("yum -y history rollback {}".format(data["yum_rollback_id"]))
@@ -32,28 +34,32 @@ def post_rollback():
 
         payload = {"deployment_id": data["deployment_id"], "action": "Update", "state": "Success",
                    "yum_transaction_id": yum_transaction_id, "yum_rollback_id": yum_rollback_id}
-        requests.post("{}/server/history/{}".format(Config.DEPLOYMENT_SERVER_URL, data["hostname"]), headers=headers,
-                      json=payload, verify=False)
+        r = requests.post("{}/server/history/{}".format(Config.DEPLOYMENT_SERVER_URL, data["hostname"]),
+                          headers=headers, json=payload, verify=False)
 
         payload = {"hostname": data["hostname"], "state": "Active"}
-        requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
+        r = requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload,
+                           verify=False)
 
         response = {
-            "status": "success",
-            "message": "Deployment successfully rolled back.",
+            "body": {
+                "status": "success",
+                "message": "Deployment successfully rolled back.",
+            },
         }
-        return response, 200
+        return response, 201
     except Exception as e:
         payload = {"hostname": data["hostname"], "state": "error"}
-        requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
+        r = requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload,
+                           verify=False)
         
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
         
         payload = {"deployment_id": data["deployment_id"], "action": "Update", "state": "Failed",
                    "yum_transaction_id": yum_transaction_id, "yum_rollback_id": yum_rollback_id}
-        requests.post("{}/server/history/{}".format(Config.DEPLOYMENT_SERVER_URL, data["hostname"]), headers=headers,
-                      json=payload, verify=False)
+        r = requests.post("{}/server/history/{}".format(Config.DEPLOYMENT_SERVER_URL, data["hostname"]),
+                          headers=headers, json=payload, verify=False)
         
         response = {
             "status": "fail",

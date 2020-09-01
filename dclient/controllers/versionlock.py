@@ -3,8 +3,7 @@ import subprocess
 from flask import request
 
 
-def post_versionlock():
-    data = request.get_json()
+def post_versionlock(data):
     try:
         for pkg in data["versionlock"]:
             os.system("yum versionlock add "+pkg)
@@ -13,11 +12,10 @@ def post_versionlock():
             "message": "New versionlock list successfully created.",
         }
         return response, 201
-    except Exception as e:
+    except:
         response = {
             "status": "fail",
             "message": "POST versionlock list failed.",
-            "exception": e
         }
         return response, 409
 
@@ -34,9 +32,9 @@ def get_versionlock():
             "versionlock": versionlock,
         }
         return response, 200
-    except Exception as e:
+    except:
         response = {
-            "message": "Failed to GET versionlock list",
-            "exception": e
+            "status": "failure",
+            "message": "Failed to GET versionlock list"
         }
         return response, 409

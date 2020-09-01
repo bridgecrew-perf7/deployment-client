@@ -1,30 +1,37 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 
 import requests
 from flask import Flask, request
 from gunicorn.app.wsgiapp import WSGIApplication
 
+from dclient.config import Config
+from dclient.controllers.upload import post_upload
+from dclient.controllers.update import post_update
 from dclient.controllers.rollout import post_rollout
 from dclient.controllers.rollback import post_rollback
 from dclient.controllers.healthcheck import get_healthcheck
 from dclient.controllers.versionlock import post_versionlock, get_versionlock
-from dclient.config import Config
 
 
 def setup_client():
     if not Config.TOKEN:
         data = {
+            "created_by": "dclient",
             "hostname": Config.HOSTNAME,
             "ip": Config.IP,
-            "state": Config.STATE,
+            "state": "New",
             "group": Config.GROUP,
-            "environment": Config.ENVIRONMENT
+            "environment": Config.ENVIRONMENT,
+            "location": Config.LOCATION,
+            "deployment_proxy": Config.DEPLOYMENT_PROXY
         }
-        r = requests.post("{}/server".format(Config.DEPLOYMENT_SERVER_URL), data=data, verify=False)
+        r = requests.post("{}/register".format(Config.DEPLOYMENT_SERVER_URL), json=data, verify=False)
         resp = r.json()
         if "TOKEN" in resp:
             with open("/etc/default/dclient", "a") as file:
                 file.write("TOKEN={}".format(resp["TOKEN"]))
+    payload = {"hostname": data["hostname"], "state": "active"}
+    requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
 
 
 class DClient(WSGIApplication):
@@ -55,6 +62,11 @@ def create_app():
         if request.method == "GET":
             return get_healthcheck()
 
+    @app.route("/update", methods=["POST"])
+    def update():
+        if request.method == "POST":
+            return post_update()
+
     @app.route("/rollout", methods=["POST"])
     def rollout():
         if request.method == "POST":
@@ -65,10 +77,12 @@ def create_app():
         if request.method == "POST":
             return post_rollback()
 
-    @app.route("/versionlock", methods=["POST"])
+    @app.route("/versionlock", methods=["GET", "POST"])
     def versionlock():
         if request.method == "POST":
             return post_versionlock()
+        elif request.method == "GET":
+            return get_versionlock()
 
     @app.route("/upload", methods=["POST"])
     def upload():
@@ -80,18 +94,15 @@ def create_app():
 
 if __name__ == "__main__":
     options = {
-        "bind": "%s:%s" % ("0.0.0.0", "8000"),
+        "bind": "%s:%s" % ("0.0.0.0", "8003"),
         "workers": 2,
         "reload-engine": "auto",
         "spew": False,
-        "access_log": "/var/log/dclient/access.log",
         "access-logformat": "%(h)s %(l)s %(u)s %(t)s '%(r)s' %(s)s %(b)s '%(f)s' '%(a)s'",
-        "disable-redirect-access-to-syslog": True,
-        "error_log": "/var/log/dclient/error.log",
+        "disable-redirect-access-to-syslog": False,
         "log-level": "debug",
         "capture-output": True,
         "worker_class": "sync",
         "timeout": 600
     }
     DClient(create_app(), options).run()
-
