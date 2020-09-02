@@ -16,35 +16,6 @@ pipeline {
                           """,
                         returnStdout: true).trim()
   }
-  wrappers {
-    preBuildCleanup { // Clean before build
-      includePattern('**/target/**')
-      deleteDirectories()
-      cleanupParameter('CLEANUP')
-    }
-  }
-  publishers {
-    cleanWs { // Clean after build
-      cleanWhenAborted(true)
-      cleanWhenFailure(true)
-      cleanWhenNotBuilt(false)
-      cleanWhenSuccess(true)
-      cleanWhenUnstable(true)
-      deleteDirs(true)
-      notFailBuild(true)
-      disableDeferredWipeout(true)
-      patterns {
-          pattern {
-              type('EXCLUDE')
-              pattern('.propsfile')
-          }
-          pattern {
-              type('INCLUDE')
-              pattern('.gitignore')
-          }
-      }
-    }
-  }
   stages {
     stage("Prepare") {
         steps {
@@ -61,19 +32,31 @@ pipeline {
             sh"python setup.py bdist_rpm"
         }
     }
-    stage("Sign RPM with alpha key") {
-        steps {
-	    sh "echo Sign RPM"
-	    script {
-                def response = httpRequest 'http://primemirror.unifiedlayer.com:8001/'
-                println("Status: "+response.status)
-                println("Content: "+response.content)
-            }
-        }
+    stage('Collect data from RPM') {
+      steps {
+          script {
+             env.BINARY_RPM = sh(returnStdout: true, script: "ls ${workspace}/dist/*.noarch.rpm"
+          }
+      }
     }
     stage("Deploy to primemirror web root") {
         steps {
-            sh "sudo -u mirroradmin cp dist/*.noarch.rpm /var/www/html/mirrors/production/centos7/noarch/"
+            sh "sudo -u mirroradmin cp ${WORKSPACE}/dist/${env.BINARY_RPM} /var/www/html/mirrors/production/centos7/noarch/"
+        }
+    }
+    stage("Sign RPM with production key") {
+        steps {
+	    sh "echo Sign RPM"
+	    script {
+		Map requestProperties = ['acceptType':'APPLICATION_JSON']
+		String requestBody '"repo": "production", "rpm": "", "elver": 7, "arch": "noarch"'
+                String url "http://primemirror.unifiedlayer.com:8001/sign"
+		def request = new HttpsRequest(this, url, "POST", requestProperties, requestBody)
+    		def response = request.doHttpsRequest()
+    		if (response.getStatus() == 200) {
+        	    echo response.getContent()
+    		}
+            }
         }
     }
     stage("Update alpha yum repo metadata") {
@@ -103,9 +86,11 @@ pipeline {
     }
     success {
       echo "This ran because the pipeline was successful"
+      sh "rm -rf ${WORKSPACE}"
     }
     failure {
       echo "This ran because the pipeline failed"
+      sh "rm -rf ${WORKSPACE}"
     }
     unstable {
       echo "This ran because the pipeline was marked unstable"
