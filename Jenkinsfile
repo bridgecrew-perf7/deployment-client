@@ -5,7 +5,6 @@ pipeline {
     RELEASE_STR = "${params.release == "" ? "1" : params.release}"
     PKG_VER = sh(returnStdout: true, script: "date +%Y%m%d").trim()
     MOCK_CFG = "epel-${params.elvers}-x86_64-ul"
-    TAR_FILE = "sources/${pkgName}-${PKG_VER}.tar.bz2"
     EXCLUDE_FILE = sh(
                         script:
                           """
@@ -18,61 +17,61 @@ pipeline {
   }
   stages {
     stage("Prepare") {
-        steps {
-            sh "echo PREPARE"
-        }
+      steps {
+        sh "echo PREPARE"
+      }
     }
     stage("Test") {
-        steps {
-            sh "echo TEST"
-        }
+      steps {
+        sh "echo TEST"
+      }
     }
     stage("Create RPM") {
-        steps {
-            sh"python setup.py bdist_rpm"
-        }
+      steps {
+        sh"python setup.py bdist_rpm"
+      }
     }
     stage('Collect data from RPM') {
       steps {
-          script {
-             env.BINARY_RPM = sh(returnStdout: true, script: "ls ${workspace}/dist/*.noarch.rpm"
-          }
+        script {
+          env.BINARY_RPM = sh(returnStdout: true, script: "ls ${workspace}/dist/*.noarch.rpm"
+        }
       }
     }
     stage("Deploy to primemirror web root") {
-        steps {
-            sh "sudo -u mirroradmin cp ${WORKSPACE}/dist/${env.BINARY_RPM} /var/www/html/mirrors/production/centos7/noarch/"
-        }
+      steps {
+        sh "sudo -u mirroradmin cp ${WORKSPACE}/dist/${env.BINARY_RPM} /var/www/html/mirrors/production/centos7/noarch/"
+      }
     }
     stage("Sign RPM with production key") {
-        steps {
-	    sh "echo Sign RPM"
-	    script {
-		Map requestProperties = ['acceptType':'APPLICATION_JSON']
-		String requestBody '"repo": "production", "rpm": "", "elver": 7, "arch": "noarch"'
-                String url "http://primemirror.unifiedlayer.com:8001/sign"
-		def request = new HttpsRequest(this, url, "POST", requestProperties, requestBody)
-    		def response = request.doHttpsRequest()
-    		if (response.getStatus() == 200) {
-        	    echo response.getContent()
-    		}
-            }
+      steps {
+        sh "echo Sign RPM"
+	script {
+          Map requestProperties = ['acceptType':'APPLICATION_JSON']
+	  String requestBody '"repo": "production", "rpm": "", "elver": 7, "arch": "noarch"'
+          String url "http://primemirror.unifiedlayer.com:8001/sign"
+          def request = new HttpsRequest(this, url, "POST", requestProperties, requestBody)
+    	  def response = request.doHttpsRequest()
+    	  if (response.getStatus() == 200) {
+            echo response.getContent()
+    	  }
         }
+      }
     }
     stage("Update alpha yum repo metadata") {
-        steps {
-            sh "sudo -i -u mirroradmin createrepo --update /var/www/html/mirrors/production/centos7"
-        }
+      steps {
+        sh "sudo -i -u mirroradmin createrepo --update /var/www/html/mirrors/production/centos7"
+      }
     }
     stage("Sync Repo to Mirrors Infrastructure") {
-        steps {
-            sh "sudo -u mirroradmin /home/mirroradmin/repo_sync.py --repo production"
-        }
+      steps {
+        sh "sudo -u mirroradmin /home/mirroradmin/repo_sync.py --repo production"
+      }
     }
     stage("Deploy") {
-        steps {
-            sh "echo DEPLOY"
-        }
+      steps {
+        sh "echo DEPLOY"
+      }
     }
   }
   post {
