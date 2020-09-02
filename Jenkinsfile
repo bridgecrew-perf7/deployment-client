@@ -34,7 +34,7 @@ pipeline {
     stage('Collect data from RPM') {
       steps {
         script {
-          env.BINARY_RPM = sh(returnStdout: true, script: "ls ${WORKSPACE}/dist/*.noarch.rpm")
+          env.BINARY_RPM = sh(returnStdout: true, script: "cd ${WORKSPACE}/dist; ls *.noarch.rpm")
         }
       }
     }
