@@ -16,6 +16,35 @@ pipeline {
                           """,
                         returnStdout: true).trim()
   }
+  wrappers {
+    preBuildCleanup { // Clean before build
+      includePattern('**/target/**')
+      deleteDirectories()
+      cleanupParameter('CLEANUP')
+    }
+  }
+  publishers {
+    cleanWs { // Clean after build
+      cleanWhenAborted(true)
+      cleanWhenFailure(true)
+      cleanWhenNotBuilt(false)
+      cleanWhenSuccess(true)
+      cleanWhenUnstable(true)
+      deleteDirs(true)
+      notFailBuild(true)
+      disableDeferredWipeout(true)
+      patterns {
+          pattern {
+              type('EXCLUDE')
+              pattern('.propsfile')
+          }
+          pattern {
+              type('INCLUDE')
+              pattern('.gitignore')
+          }
+      }
+    }
+  }
   stages {
     stage("Prepare") {
         steps {
@@ -74,11 +103,9 @@ pipeline {
     }
     success {
       echo "This ran because the pipeline was successful"
-      sh "rm -rf ${workspace}"
     }
     failure {
       echo "This ran because the pipeline failed"
-      sh "rm -rf ${workspace}"
     }
     unstable {
       echo "This ran because the pipeline was marked unstable"
