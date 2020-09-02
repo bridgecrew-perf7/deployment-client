@@ -43,19 +43,23 @@ pipeline {
         sh "sudo -u mirroradmin cp ${WORKSPACE}/dist/${env.BINARY_RPM} /var/www/html/mirrors/production/centos7/noarch/"
       }
     }
-    stage("Sign RPM with production key") {
+    stage('Sign RPM') {
       steps {
-        sh "echo Sign RPM"
-	script {
-          Map requestProperties = ['acceptType':'APPLICATION_JSON']
-	  String requestBody '"repo": "production", "rpm": "", "elver": 7, "arch": "noarch"'
-          String url "http://primemirror.unifiedlayer.com:8001/sign"
-          def request = new HttpsRequest(this, url, "POST", requestProperties, requestBody)
-    	  def response = request.doHttpsRequest()
-    	  if (response.getStatus() == 200) {
-            echo response.getContent()
-    	  }
-        }
+        script {
+          String requestBody = common.v2.HttpsRequest.toJson([
+            'elver':    7, 
+            'repo':     "production",
+            'arch':     "noarch", 
+            'rpm' :     "${env.BINARY_RPM}"])
+          def request = new common.v2.HttpsRequest(this,
+            'http://primemirror.unifiedlayer.com:8001/sign', "POST",
+            [:], requestBody)
+          def response = request.doHttpsRequest()
+            if (response.getStatus() != 200) {
+              echo response.getContent()
+              error ('PrimeMirror API call failed.')
+            }
+         }
       }
     }
     stage("Update alpha yum repo metadata") {
