@@ -40,7 +40,7 @@ pipeline {
     }
     stage("Sign RPM with alpha key") {
         steps {
-            sh "sudo -i -u mirroradmin /home/mirroradmin/rpm-sign-production.sh dist/*.rpm"
+            sh "sudo -i -u mirroradmin /home/mirroradmin/rpm-sign-production.sh ${workspace}/dist/*.rpm"
         }
     }
     stage("Deploy to primemirror web root") {
@@ -77,6 +77,7 @@ pipeline {
         echo "Pipeline currentResult: ${currentBuild.currentResult}"
         notifyBitbucket()
       }
+      sh "rm -rf ${workspace}"
     }
     success {
       echo "This ran because the pipeline was successful"
