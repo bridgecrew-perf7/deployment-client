@@ -35,9 +35,11 @@ pipeline {
     stage("Sign RPM with alpha key") {
         steps {
 	    sh "echo Sign RPM"
-            def response = httpRequest 'http://primemirror.unifiedlayer.com:8001/'
-            println("Status: "+response.status)
-            println("Content: "+response.content)
+	    script {
+                def response = httpRequest 'http://primemirror.unifiedlayer.com:8001/'
+                println("Status: "+response.status)
+                println("Content: "+response.content)
+            }
         }
     }
     stage("Deploy to primemirror web root") {
