@@ -41,7 +41,13 @@ pipeline {
     }
     stage("Sign RPM with alpha key") {
         steps {
-            sh "sudo -i -u mirroradmin /home/mirroradmin/rpm-sign-production.sh ${workspace}/dist/*.rpm"
+	    Map requestProperties = ['acceptType':'APPLICATION_JSON']
+	    String url "http://primemirror.unifiedlayer.com:8001/sign"
+	    String requestBody '{"repo": "production", "rpm": "", "elver": 7, "arch": "noarch"}'
+            def request = new HttpsRequest(this, url, "POST", requestProperties, requestBody)
+	    if (response.getStatus() == 200) {
+        	echo response.getContent()
+    	    }
         }
     }
     stage("Deploy to primemirror web root") {
@@ -78,13 +84,14 @@ pipeline {
         echo "Pipeline currentResult: ${currentBuild.currentResult}"
         notifyBitbucket()
       }
-      sh "rm -rf ${workspace}"
     }
     success {
       echo "This ran because the pipeline was successful"
+      sh "rm -rf ${workspace}"
     }
     failure {
       echo "This ran because the pipeline failed"
+      sh "rm -rf ${workspace}"
     }
     unstable {
       echo "This ran because the pipeline was marked unstable"
