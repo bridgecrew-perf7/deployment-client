@@ -34,3 +34,7 @@ def post_update():
     systemd1 = sysbus.get_object("org.freedesktop.systemd1", "/org/freedesktop/systemd1")
     manager = dbus.Interface(systemd1, "org.freedesktop.systemd1.Manager")
     manager.RestartUnit("dclient.service", "fail")
+
+    headers = {"Authorization": Config.TOKEN}
+    payload = {"hostname": data["hostname"], "state": "active"}
+    requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)

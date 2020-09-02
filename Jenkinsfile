@@ -40,17 +40,17 @@ pipeline {
     }
     stage("Sign RPM with alpha key") {
         steps {
-            sh "sudo -i -u mirroradmin /home/mirroradmin/rpm-sign-alpha.sh dist/*.rpm"
+            sh "sudo -i -u mirroradmin /home/mirroradmin/rpm-sign-production.sh dist/*.rpm"
         }
     }
     stage("Deploy to primemirror web root") {
         steps {
-            sh "sudo -u mirroradmin cp dist/*.noarch.rpm /var/www/html/mirrors/alpha/centos7/noarch/"
+            sh "sudo -u mirroradmin cp dist/*.noarch.rpm /var/www/html/mirrors/production/centos7/noarch/"
         }
     }
     stage("Update alpha yum repo metadata") {
         steps {
-            sh "sudo -i -u mirroradmin createrepo --update /var/www/html/mirrors/alpha/centos7"
+            sh "sudo -i -u mirroradmin createrepo --update /var/www/html/mirrors/production/centos7"
         }
     }
     stage("Trigger promote service cache rebuild") {
@@ -60,7 +60,7 @@ pipeline {
     }
     stage("Sync Repo to Mirrors Infrastructure") {
         steps {
-            sh "sudo -u mirroradmin /home/mirroradmin/repo_sync.py --repo alpha"
+            sh "sudo -u mirroradmin /home/mirroradmin/repo_sync.py --repo production"
         }
     }
     stage("Deploy") {
