@@ -1,13 +1,6 @@
 @Library('eigi-jenkins-library') _
 pipeline {
   agent { label "mockbuild" }
-  parameters {
-    string(
-      name: "release",
-      defaultValue: "1",
-      description: "Release number (defaults to 1 if empty)"
-    )
-  }
   environment {
     RELEASE_STR = "${params.release == "" ? "1" : params.release}"
     PKG_VER = sh(returnStdout: true, script: "date +%Y%m%d").trim()
@@ -41,13 +34,10 @@ pipeline {
     }
     stage("Sign RPM with alpha key") {
         steps {
-	    Map requestProperties = ['acceptType':'APPLICATION_JSON']
-	    String url "http://primemirror.unifiedlayer.com:8001/sign"
-	    String requestBody '{"repo": "production", "rpm": "", "elver": 7, "arch": "noarch"}'
-            def request = new HttpsRequest(this, url, "POST", requestProperties, requestBody)
-	    if (response.getStatus() == 200) {
-        	echo response.getContent()
-    	    }
+	    sh "echo Sign RPM"
+            def response = httpRequest 'http://primemirror.unifiedlayer.com:8001/'
+            println("Status: "+response.status)
+            println("Content: "+response.content)
         }
     }
     stage("Deploy to primemirror web root") {
@@ -58,11 +48,6 @@ pipeline {
     stage("Update alpha yum repo metadata") {
         steps {
             sh "sudo -i -u mirroradmin createrepo --update /var/www/html/mirrors/production/centos7"
-        }
-    }
-    stage("Trigger promote service cache rebuild") {
-        steps {
-            sh "curl https://promote.unifiedlayer.com/recache/centos7"
         }
     }
     stage("Sync Repo to Mirrors Infrastructure") {
