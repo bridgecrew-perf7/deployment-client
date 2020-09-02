@@ -1,3 +1,4 @@
+@Library('eigi-jenkins-library') _
 pipeline {
   agent { label "mockbuild" }
   parameters {
