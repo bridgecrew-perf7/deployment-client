@@ -48,7 +48,7 @@ pipeline {
     stage('Sign RPM') {
       steps {
         script {
-          String jsonData = '{"elver": 7, "repo": "production", "arch": "noarch", "rpm": "dclient-0.0.106-1.noarch.rpm"}'
+          String jsonData = '{"elver": 7, "repo": "production", "arch": "noarch", "rpm": "${env.BINARY_RPM}"}'
 	  def request = httpRequest acceptType: "APPLICATION_JSON", 
             contentType: "APPLICATION_JSON", 
             httpMode: "POST", 
@@ -59,7 +59,7 @@ pipeline {
               echo response.getContent()
               error ('PrimeMirror API call failed.')
             }
-         }
+        }
       }
     }
     stage('Sync Production Repo to Mirrors Infrastructure') {
