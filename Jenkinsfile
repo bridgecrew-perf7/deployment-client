@@ -40,9 +40,7 @@ pipeline {
     }
     stage("Deploy to primemirror production repo") {
       steps {
-        script {
-          sh("sudo -u mirroradmin cp dist/dclient-0.0.106-1.noarch.rpm /var/www/html/mirrors/production/centos7/noarch/")
-        }
+        sh"sudo -u mirroradmin cp dist/dclient-0.0.106-1.noarch.rpm /var/www/html/mirrors/production/centos7/noarch/"
       }
     }
     stage('Sign RPM') {
@@ -85,29 +83,29 @@ pipeline {
         }
       }
     }
-  post {
-    always {
-      echo "This will always run"
-      script {
-        echo "Pipeline result: ${currentBuild.result}"
-        echo "Pipeline currentResult: ${currentBuild.currentResult}"
-        notifyBitbucket()
+    post {
+      always {
+        echo "This will always run"
+        script {
+          echo "Pipeline result: ${currentBuild.result}"
+          echo "Pipeline currentResult: ${currentBuild.currentResult}"
+          notifyBitbucket()
+        }
+        sh "rm -rf ${WORKSPACE}"
       }
-      sh "rm -rf ${WORKSPACE}"
-    }
-    success {
-      echo "This ran because the pipeline was successful"
-    }
-    failure {
-      echo "This ran because the pipeline failed"
-    }
-    unstable {
-      echo "This ran because the pipeline was marked unstable"
-    }
-    changed {
-      echo "This ran because the state of the Pipeline has changed"
-      echo "For example, if the Pipeline was previously failing but is now successful"
+      success {
+        echo "This ran because the pipeline was successful"
+      }
+      failure {
+        echo "This ran because the pipeline failed"
+      }
+      unstable {
+        echo "This ran because the pipeline was marked unstable"
+      }
+      changed {
+        echo "This ran because the state of the Pipeline has changed"
+        echo "For example, if the Pipeline was previously failing but is now successful"
+      }
     }
   }
-}
 }
