@@ -8,6 +8,8 @@ class Config:
         ip = os.getenv("PUBLIC_IP")
     else:
         ip = os.getenv("IP")
+    USERNAME = os.getenv("USERNAME")
+    PASSWORD = os.getenv("PASSWORD")
     HOSTNAME = os.getenv("HOSTNAME")
     IP = ip
     STATE = os.getenv("STATE")

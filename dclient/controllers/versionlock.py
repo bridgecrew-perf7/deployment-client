@@ -1,12 +1,10 @@
-import os
-import subprocess
-from flask import request
+from dclient.util import sudo_cmd
 
 
 def post_versionlock(data):
     try:
         for pkg in data["versionlock"]:
-            os.system("yum versionlock add "+pkg)
+            sudo_cmd("yum versionlock add {}".format(pkg), verbose=False)
         response = {
             "status": "success",
             "message": "New versionlock list successfully created.",
@@ -22,7 +20,7 @@ def post_versionlock(data):
 
 def get_versionlock():
     try:
-        versionlock = subprocess.check_output("yum versionlock list", shell=True)
+        versionlock = sudo_cmd("yum versionlock list", verbose=True)
         versionlock = versionlock.splitlines()
         versionlock.pop(0)
         versionlock.pop()

@@ -1,40 +1,41 @@
-import os
-import yum
-import dbus
 import requests
 from flask import request
 
 from dclient.config import Config
-
-
-def install_pkgs(packages):
-    packages = [x.encode("utf-8") for x in packages]
-    yb = yum.YumBase()
-    yb.setCacheDir()
-    results = yb.pkgSack.returnNewestByNameArch(patterns=packages)
-    for pkg in results:
-        yb.install(pkg)
-    yb.buildTransaction()
-    yb.processTransaction()
+from dclient.util import sudo_cmd, install_pkgs, restart_service
 
 
 def post_update():
     data = request.get_json()
+    try:
+        headers = {"Authorization": Config.TOKEN}
+        payload = {"hostname": data["hostname"], "state": "updating"}
+        requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
 
-    # Post state updating
-    headers = {"Authorization": Config.TOKEN}
-    payload = {"hostname": data["hostname"], "state": "updating"}
-    requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
+        for pkg in data["packages"]:
+            sudo_cmd("yum versionlock add {}".format(pkg), verbose=False)
+        install_pkgs(data["packages"])
 
-    for pkg in data["packages"]:
-        os.system("yum versionlock add " + pkg)
-    install_pkgs(data["packages"])
+        restart_service("dclient.service")
+        stat = sudo_cmd("/bin/systemctl status dclient.service", verbose=False)
+        if stat != 0:
+            raise Exception(stat)
 
-    sysbus = dbus.SystemBus()
-    systemd1 = sysbus.get_object("org.freedesktop.systemd1", "/org/freedesktop/systemd1")
-    manager = dbus.Interface(systemd1, "org.freedesktop.systemd1.Manager")
-    manager.RestartUnit("dclient.service", "fail")
+        headers = {"Authorization": Config.TOKEN}
+        payload = {"hostname": data["hostname"], "state": "active"}
+        requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
 
-    headers = {"Authorization": Config.TOKEN}
-    payload = {"hostname": data["hostname"], "state": "active"}
-    requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
+        response = {
+            "status": "success",
+            "message": "Update successfully executed.",
+        }
+        return response, 201
+    except Exception as e:
+        payload = {"hostname": data["hostname"], "state": "error"}
+        requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
+        response = {
+            "status": "failed",
+            "message": "POST update failed.",
+            "exception": str(e)
+        }
+        return response, 409
