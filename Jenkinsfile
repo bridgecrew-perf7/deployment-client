@@ -78,8 +78,10 @@ pipeline {
     stage("Deploy") {
       steps {
         sh "echo DEPLOY"
-        currentBuild.result = 'SUCCESS'
-        currentBuild.currentresult = 'SUCCESS'
+        script {
+          currentBuild.result = 'SUCCESS'
+          currentBuild.currentresult = 'SUCCESS'
+        }
       }
     }
   }
