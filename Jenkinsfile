@@ -41,7 +41,7 @@ pipeline {
     stage("Deploy to primemirror production repo") {
       steps {
         script {
-          sh("sudo -u mirroradmin cp dist/${env.BINARY_RPM} /var/www/html/mirrors/production/centos7/noarch/")
+          sh("sudo -u mirroradmin cp dist/dclient-0.0.106-1.noarch.rpm /var/www/html/mirrors/production/centos7/noarch/")
         }
       }
     }
