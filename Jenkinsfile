@@ -83,29 +83,29 @@ pipeline {
         }
       }
     }
-    post {
-      always {
-        echo "This will always run"
-        script {
-          echo "Pipeline result: ${currentBuild.result}"
-          echo "Pipeline currentResult: ${currentBuild.currentResult}"
-          notifyBitbucket()
-        }
-        sh "rm -rf ${WORKSPACE}"
+  }
+  post {
+    always {
+      echo "This will always run"
+      script {
+        echo "Pipeline result: ${currentBuild.result}"
+        echo "Pipeline currentResult: ${currentBuild.currentResult}"
+        notifyBitbucket()
       }
-      success {
-        echo "This ran because the pipeline was successful"
-      }
-      failure {
-        echo "This ran because the pipeline failed"
-      }
-      unstable {
-        echo "This ran because the pipeline was marked unstable"
-      }
-      changed {
-        echo "This ran because the state of the Pipeline has changed"
-        echo "For example, if the Pipeline was previously failing but is now successful"
-      }
+      sh "rm -rf ${WORKSPACE}"
+    }
+    success {
+      echo "This ran because the pipeline was successful"
+    }
+    failure {
+      echo "This ran because the pipeline failed"
+    }
+    unstable {
+      echo "This ran because the pipeline was marked unstable"
+    }
+    changed {
+      echo "This ran because the state of the Pipeline has changed"
+      echo "For example, if the Pipeline was previously failing but is now successful"
     }
   }
 }
