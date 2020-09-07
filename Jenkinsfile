@@ -40,7 +40,8 @@ pipeline {
     }
     stage("Deploy to primemirror production repo") {
       steps {
-        sh "sudo -u mirroradmin cp ${WORKSPACE}/dist/${env.BINARY_RPM} /var/www/html/mirrors/production/centos7/noarch/"
+        sh "sudo cp ${WORKSPACE}/dist/${env.BINARY_RPM} /var/www/html/mirrors/production/centos7/noarch/"
+	sh "sudo chown -R mirroradmin:mirroradmin /var/www/html/mirrors/production/centos7/noarch/"
       }
     }
     stage('Sign RPM') {
@@ -62,14 +63,17 @@ pipeline {
          }
       }
     }
-    stage("Update alpha yum repo metadata") {
+    stage('Sync Production Repo to Mirrors Infrastructure') {
       steps {
-        sh "sudo -i -u mirroradmin createrepo --update /var/www/html/mirrors/production/centos7"
-      }
-    }
-    stage("Sync Repo to Mirrors Infrastructure") {
-      steps {
-        sh "sudo -u mirroradmin /home/mirroradmin/repo_sync.py --repo production"
+        script {
+          def request = new common.v2.HttpsRequest(this,
+            'http://primemirror.unifiedlayer.com:8001/sync/production', "GET")
+          def response = request.doHttpsRequest()
+            if (response.getStatus() != 200) {
+              echo response.getContent()
+              error ('PrimeMirror API call failed.')
+            }
+         }
       }
     }
     stage("Deploy") {
