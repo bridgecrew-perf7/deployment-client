@@ -61,7 +61,9 @@ pipeline {
 	      stageResult: 'FAILED'
             }
         }
-	stageResult: 'SUCCESS'
+        catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+          sh "exit 0"
+        }
       }
     }
     stage('Sync Production Repo to Mirrors Infrastructure') {
