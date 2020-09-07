@@ -55,8 +55,10 @@ pipeline {
               url: "http://primemirror.unifiedlayer.com:8001/sign"
             def response = request.doHttpsRequest()
             currentBuild.result = 'SUCCESS'
+            currentBuild.currentresult = 'SUCCESS'
           } catch (Exception err) {
             currentBuild.result = 'FAILURE'
+            currentBuild.currentresult = 'FAILURE'
           }
         }
       }
@@ -69,8 +71,10 @@ pipeline {
               'http://primemirror.unifiedlayer.com:8001/sync/production', "GET")
             def response = request.doHttpsRequest()
             currentBuild.result = 'SUCCESS'
+            currentBuild.currentresult = 'SUCCESS'
           } catch (Exception err) {
             currentBuild.result = 'FAILURE'
+            currentBuild.currentresult = 'FAILURE'
           }
         }
       }
