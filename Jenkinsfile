@@ -34,15 +34,14 @@ pipeline {
     stage('Collect data from RPM') {
       steps {
         script {
-          env.BINARY_RPM = sh(returnStdout: true, script: "cd ${WORKSPACE}/dist; ls *.noarch.rpm")
-          env.REPO = "/var/www/html/mirrors/production/centos7/noarch/"
+          env.BINARY_RPM = sh(returnStdout: true, script: "cd dist; ls *.noarch.rpm")
         }
       }
     }
     stage("Deploy to primemirror production repo") {
       steps {
         sh """
-	     sudo -u mirroradmin cp dist/${env.BINARY_RPM} ${env.REPO}
+	     sudo -u mirroradmin cp dist/${env.BINARY_RPM} /var/www/html/mirrors/production/centos7/noarch/
 	   """
       }
     }
