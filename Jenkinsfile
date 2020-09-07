@@ -42,7 +42,7 @@ pipeline {
     stage("Deploy to primemirror production repo") {
       steps {
         sh """
-	     sudo -u mirroradmin cp ${WORKSPACE}/dist/${env.BINARY_RPM} ${env.REPO}
+	     sudo -u mirroradmin cp dist/${env.BINARY_RPM} ${env.REPO}
 	   """
       }
     }
