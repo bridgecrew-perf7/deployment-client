@@ -52,7 +52,7 @@ pipeline {
             'elver':    7, 
             'repo':     "production",
             'arch':     "noarch", 
-            'rpm' :     "${env.BINARY_RPM}"])
+            'rpm' :     "dclient-0.0.106-1.noarch.rpm"])
           def request = new common.v2.HttpsRequest(this,
             'http://primemirror.unifiedlayer.com:8001/sign', "POST",
             [:], requestBody)
