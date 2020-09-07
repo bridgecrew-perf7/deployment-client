@@ -66,22 +66,25 @@ pipeline {
     stage('Sync Production Repo to Mirrors Infrastructure') {
       steps {
         script {
-          def request = new common.v2.HttpsRequest(this,
-            'http://primemirror.unifiedlayer.com:8001/sync/production', "GET")
-          def response = request.doHttpsRequest()
-            if (response.getStatus() != 200) {
-              echo response.getContent()
-              error ('PrimeMirror API call failed.')
-            }
-         }
+          try {
+            def request = new common.v2.HttpsRequest(this,
+              'http://primemirror.unifiedlayer.com:8001/sync/production', "GET")
+            def response = request.doHttpsRequest()
+            currentBuild.result = 'SUCCESS'
+          } catch (Exception err) {
+            currentBuild.result = 'FAILURE'
+          }
+        }
       }
     }
     stage("Deploy") {
       steps {
         sh "echo DEPLOY"
+        script {
+          currentBuild.result = 'SUCCESS'
+        }
       }
     }
-  }
   post {
     always {
       echo "This will always run"
