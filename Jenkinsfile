@@ -40,8 +40,7 @@ pipeline {
     }
     stage("Deploy to primemirror production repo") {
       steps {
-        sh "sudo cp ${WORKSPACE}/dist/${env.BINARY_RPM} /var/www/html/mirrors/production/centos7/noarch/"
-	sh "sudo chown -R mirroradmin:mirroradmin /var/www/html/mirrors/production/centos7/noarch/"
+        sh "sudo -u mirroradmin cp ${WORKSPACE}/dist/${env.BINARY_RPM} /var/www/html/mirrors/production/centos7/noarch/"
       }
     }
     stage('Sign RPM') {
