@@ -35,13 +35,14 @@ pipeline {
       steps {
         script {
           env.BINARY_RPM = sh(returnStdout: true, script: "cd ${WORKSPACE}/dist; ls *.noarch.rpm")
+          env.REPO = "/var/www/html/mirrors/production/centos7/noarch/"
         }
       }
     }
     stage("Deploy to primemirror production repo") {
       steps {
         sh """
-	     sudo -u mirroradmin cp ${WORKSPACE}/dist/${env.BINARY_RPM} /var/www/html/mirrors/production/centos7/noarch/
+	     sudo -u mirroradmin cp ${WORKSPACE}/dist/${env.BINARY_RPM} ${env.REPO}
 	   """
       }
     }
