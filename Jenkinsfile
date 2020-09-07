@@ -48,21 +48,18 @@ pipeline {
     stage('Sign RPM') {
       steps {
         script {
-          String jsonData = '{"elver": 7, "repo": "production", "arch": "noarch", "rpm": "dclient-0.0.106-1.noarch.rpm"}'
-	  def request = httpRequest acceptType: "APPLICATION_JSON", 
-            contentType: "APPLICATION_JSON", 
-            httpMode: "POST", 
-            requestBody: jsonData, 
-            url: "http://primemirror.unifiedlayer.com:8001/sign"
-          def response = request.doHttpsRequest()
-            if (response.getStatus() != 200) {
-              echo response.getContent()
-              error ('PrimeMirror API call failed.')
-	      stageResult: 'FAILED'
-            }
-        }
-        catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
-          sh "exit 0"
+          try {
+            String jsonData = '{"elver": 7, "repo": "production", "arch": "noarch", "rpm": "dclient-0.0.106-1.noarch.rpm"}'
+	    def request = httpRequest acceptType: "APPLICATION_JSON", 
+              contentType: "APPLICATION_JSON", 
+              httpMode: "POST", 
+              requestBody: jsonData, 
+              url: "http://primemirror.unifiedlayer.com:8001/sign"
+            def response = request.doHttpsRequest()
+            currentBuild.result = 'SUCCESS'
+          } catch (Exception err) {
+            currentBuild.result = 'FAILURE'
+          }
         }
       }
     }
@@ -93,14 +90,13 @@ pipeline {
         echo "Pipeline currentResult: ${currentBuild.currentResult}"
         notifyBitbucket()
       }
+      sh "rm -rf ${WORKSPACE}"
     }
     success {
       echo "This ran because the pipeline was successful"
-      sh "rm -rf ${WORKSPACE}"
     }
     failure {
       echo "This ran because the pipeline failed"
-      sh "rm -rf ${WORKSPACE}"
     }
     unstable {
       echo "This ran because the pipeline was marked unstable"
