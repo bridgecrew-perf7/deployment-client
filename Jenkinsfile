@@ -48,14 +48,12 @@ pipeline {
     stage('Sign RPM') {
       steps {
         script {
-          String requestBody = common.v2.HttpsRequest.toJson([
-            'elver':    7, 
-            'repo':     "production",
-            'arch':     "noarch", 
-            'rpm' :     "dclient-0.0.106-1.noarch.rpm"])
-          def request = new common.v2.HttpsRequest(this,
-            'http://primemirror.unifiedlayer.com:8001/sign', "POST",
-            [:], requestBody)
+          String jsonData = '{"elver": 7, "repo": "production", "arch": "noarch", "rpm": "${env.BINARY_RPM}}"'
+	  def request = httpRequest acceptType: "APPLICATION_JSON", 
+            contentType: "APPLICATION_JSON", 
+            httpMode: "POST", 
+            requestBody: jsonData, 
+            url: "http://primemirror.unifiedlayer.com:8001/sign"
           def response = request.doHttpsRequest()
             if (response.getStatus() != 200) {
               echo response.getContent()
