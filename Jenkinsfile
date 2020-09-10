@@ -97,7 +97,7 @@ pipeline {
         echo "Pipeline currentResult: ${currentBuild.currentResult}"
         notifyBitbucket()
       }
-      sh "rm -rf ${WORKSPACE}"
+      sh "rm -rf ${WORKSPACE}/*"
     }
     success {
       echo "This ran because the pipeline was successful"
