@@ -1,10 +1,9 @@
-@Library('eigi-jenkins-library') _
+@Library("eigi-jenkins-library") _
 pipeline {
   agent { label "mockbuild" }
   environment {
-    RELEASE_STR = "${params.release == "" ? "1" : params.release}"
     PKG_VER = sh(returnStdout: true, script: "date +%Y%m%d").trim()
-    MOCK_CFG = "epel-${params.elvers}-x86_64-ul"
+    MOCK_CFG = "epel-7-x86_64-ul"
     EXCLUDE_FILE = sh(
                         script:
                           """
@@ -31,7 +30,7 @@ pipeline {
         sh"python setup.py bdist_rpm"
       }
     }
-    stage('Collect data from RPM') {
+    stage("Collect data from RPM") {
       steps {
         script {
           env.BINARY_RPM = sh(returnStdout: true, script: "cd dist; ls *.noarch.rpm")
@@ -40,41 +39,46 @@ pipeline {
     }
     stage("Deploy to primemirror production repo") {
       steps {
-        sh"sudo -u mirroradmin cp dist/dclient-0.0.106-1.noarch.rpm /var/www/html/mirrors/production/centos7/noarch/"
+        sh"sudo -u mirroradmin cp dist/*.noarch.rpm /var/www/html/mirrors/production/centos7/noarch/"
       }
     }
-    stage('Sign RPM') {
+    stage("Sign RPM") {
       steps {
         script {
           try {
-            String jsonData = '{"elver": 7, "repo": "production", "arch": "noarch", "rpm": "dclient-0.0.106-1.noarch.rpm"}'
-	    def request = httpRequest acceptType: "APPLICATION_JSON", 
-              contentType: "APPLICATION_JSON", 
-              httpMode: "POST", 
-              requestBody: jsonData, 
-              url: "http://primemirror.unifiedlayer.com:8001/sign"
-            def response = request.doHttpsRequest()
-            currentBuild.result = 'SUCCESS'
-            currentBuild.currentresult = 'SUCCESS'
-          } catch (Exception err) {
-            currentBuild.result = 'FAILURE'
-            currentBuild.currentresult = 'FAILURE'
+            String requestBody = common.v2.HttpsRequest.toJson([
+              "elver": "7",
+              "repo": "production",
+              "arch": "noarch",
+              "rpm": "${env.BINARY_RPM}" ])
+              def request = new common.v2.HttpsRequest(this,
+                "http://primemirror.unifiedlayer.com:8001/sign", "POST",
+                ["contentType": "APPLICATION_JSON"], requestBody)
+              def response = request.doHttpsRequest()
+              if (response.getStatus() != 200) {
+                echo response.getContent()
+                error ("PrimeMirror API sign call failed.")
+              }
+              else {
+                currentBuild.result = "SUCCESS";
+              }
+          }
+          catch (Exception err) {
+            currentBuild.result = "FAILURE";
           }
         }
       }
     }
-    stage('Sync Production Repo to Mirrors Infrastructure') {
+    stage("Sync Production Repo to Mirrors Infrastructure") {
       steps {
         script {
           try {
             def request = new common.v2.HttpsRequest(this,
-              'http://primemirror.unifiedlayer.com:8001/sync/production', "GET")
+              "http://primemirror.unifiedlayer.com:8001/sync/production", "GET")
             def response = request.doHttpsRequest()
-            currentBuild.result = 'SUCCESS'
-            currentBuild.currentresult = 'SUCCESS'
+            currentBuild.result = "SUCCESS"
           } catch (Exception err) {
-            currentBuild.result = 'FAILURE'
-            currentBuild.currentresult = 'FAILURE'
+            currentBuild.result = "FAILURE"
           }
         }
       }
@@ -83,8 +87,7 @@ pipeline {
       steps {
         sh "echo DEPLOY"
         script {
-          currentBuild.result = 'SUCCESS'
-          currentBuild.currentresult = 'SUCCESS'
+          currentBuild.result = "SUCCESS"
         }
       }
     }
