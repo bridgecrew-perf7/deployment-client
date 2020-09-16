@@ -5,6 +5,7 @@ from flask import Flask, request
 from gunicorn.app.wsgiapp import WSGIApplication
 
 from dclient.config import Config
+from dclient.util import update_env
 from dclient.controllers.update import post_update
 from dclient.controllers.rollout import post_rollout
 from dclient.controllers.rollback import post_rollback
@@ -27,11 +28,12 @@ def setup_client():
         r = requests.post("{}/register".format(Config.DEPLOYMENT_SERVER_URL), json=data, verify=False)
         resp = r.json()
         if "token" in resp:
-            with open("/etc/default/dclient", "a") as file:
-                file.write("TOKEN={}".format(resp["token"]))
-    headers = {"Authorization": resp["token"]}
-    payload = {"hostname": data["hostname"], "state": "active"}
-    requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
+            update_env("TOKEN", resp["token"])
+            update_env("STATE", resp["ACTIVE"])
+            headers = {"Authorization": resp["token"]}
+            payload = {"hostname": data["hostname"], "state": "active"}
+            requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload,
+                           verify=False)
 
 
 class DClient(WSGIApplication):

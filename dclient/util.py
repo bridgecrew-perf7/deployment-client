@@ -43,3 +43,17 @@ def restart_service(service):
     systemd1 = sysbus.get_object("org.freedesktop.systemd1", "/org/freedesktop/systemd1")
     manager = dbus.Interface(systemd1, "org.freedesktop.systemd1.Manager")
     manager.RestartUnit(service, "fail")
+
+
+def update_env(key, value):
+    dclient = {}
+    with open("/etc/default/dclient") as f:
+        for line in f:
+            (k, v) = line.split("=")
+            dclient[int(k)] = v
+    dclient[key] = value
+
+    with open("/etc/default/dclient", "w") as f:
+        for k in dclient.keys():
+            line = "{}={}".format(k, dclient[k])
+            f.write(line)
