@@ -18,7 +18,7 @@ def setup_client():
             "created_by": "dclient",
             "hostname": Config.HOSTNAME,
             "ip": Config.IP,
-            "state": "New",
+            "state": "NEW",
             "group": Config.GROUP,
             "environment": Config.ENVIRONMENT,
             "location": Config.LOCATION,
