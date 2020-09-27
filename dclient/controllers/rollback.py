@@ -1,8 +1,9 @@
+import os
 import requests
 from flask import request
 
 from dclient.config import Config
-from dclient.util import get_yum_transaction_id, sudo_cmd, restart_service
+from dclient.util import get_yum_transaction_id, restart_service
 
 
 def post_rollback():
@@ -12,35 +13,35 @@ def post_rollback():
     requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
     
     try:
-        sudo_cmd("yum -y history rollback {}".format(data["yum_rollback_id"]), verbose=False)
+        os.system("yum -y history rollback {}".format(data["yum_rollback_id"]))
         for pkg in data["versionlock"]:
-            sudo_cmd("yum versionlock add {}".format(pkg), verbose=False)
+            os.system("yum versionlock add {}".format(pkg))
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
         if "buildall" in data:
-            sudo_cmd("/var/hp/common/bin/buildall -s", verbose=False)
+            os.system("sudo /var/hp/common/bin/buildall -s")
         restart_service("httpd.service")
-        stat = sudo_cmd("/bin/systemctl status httpd.service", verbose=False)
+        stat = os.system("/bin/systemctl status httpd.service")
         if stat != 0:
             raise Exception(stat)
 
-        payload = {"deployment_id": data["deployment_id"], "action": "Update", "state": "Success",
+        payload = {"deployment_id": data["deployment_id"], "action": "Update", "state": "SUCCESS",
                    "yum_transaction_id": yum_transaction_id, "yum_rollback_id": yum_rollback_id}
         requests.post("{}/server/history/{}".format(Config.DEPLOYMENT_SERVER_URL, data["hostname"]),
                       headers=headers, json=payload, verify=False)
 
-        payload = {"hostname": data["hostname"], "state": "Active"}
+        payload = {"hostname": data["hostname"], "state": "ACTIVE"}
         requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
 
         response = {
             "body": {
-                "status": "success",
+                "status": "SUCCESS",
                 "message": "Deployment successfully rolled back.",
             },
         }
         return response, 201
     except Exception as e:
-        payload = {"hostname": data["hostname"], "state": "error"}
+        payload = {"hostname": data["hostname"], "state": "ERROR"}
         requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
         
         yum_transaction_id = get_yum_transaction_id()

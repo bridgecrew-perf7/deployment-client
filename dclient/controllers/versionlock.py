@@ -1,10 +1,10 @@
-from dclient.util import sudo_cmd
+import os
 
 
 def post_versionlock(data):
     try:
         for pkg in data["versionlock"]:
-            sudo_cmd("yum versionlock add {}".format(pkg), verbose=False)
+            os.system("sudo yum versionlock add {}".format(pkg))
         response = {
             "status": "success",
             "message": "New versionlock list successfully created.",
@@ -20,7 +20,7 @@ def post_versionlock(data):
 
 def get_versionlock():
     try:
-        versionlock = sudo_cmd("yum versionlock list", verbose=True)
+        versionlock = os.system("sudo yum versionlock list")
         versionlock = versionlock.splitlines()
         versionlock.pop(0)
         versionlock.pop()

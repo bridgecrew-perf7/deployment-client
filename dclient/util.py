@@ -1,12 +1,17 @@
 import re
-import dbus
-from subprocess import check_output, check_call
+from collections import OrderedDict
+from subprocess import Popen, check_call, check_output
 
-from dclient.config import Config
+
+class LastUpdated(OrderedDict):
+
+    def __setitem__(self, key, value):
+        super().__setitem__(key, value)
+        self.move_to_end(key)
 
 
 def get_yum_transaction_id():
-    history_list = sudo_cmd("yum history list", verbose=True)
+    history_list = check_output("yum history list")
     history_list = history_list.splitlines()
     count = 0
     fl = 0
@@ -22,38 +27,30 @@ def get_yum_transaction_id():
     return tid
 
 
-def sudo_cmd(cmd, verbose=None):
-    sudo = Config.PASSWORD
-    if verbose:
-        return check_output("echo {} | sudo -S {}".format(sudo, cmd), bufsize=-1, shell=True)
-    else:
-        return check_call("echo {} | sudo -S {}".format(sudo, cmd), bufsize=-1, shell=True)
-
-
 def install_pkgs(packages):
     packages = [x.encode('utf-8') for x in packages]
     packages = ' '.join(packages)
-    stat = sudo_cmd("yum -y install {}".format(packages), verbose=False)
+    check_call("yum clean all")
+    stat = check_call("yum -y --enablerepo=Production install {}".format(packages))
     if stat != 0:
         raise Exception(stat)
 
 
 def restart_service(service):
-    sysbus = dbus.SystemBus()
-    systemd1 = sysbus.get_object("org.freedesktop.systemd1", "/org/freedesktop/systemd1")
-    manager = dbus.Interface(systemd1, "org.freedesktop.systemd1.Manager")
-    manager.RestartUnit(service, "fail")
+    Popen(["systemctl", "restart", service])
 
 
 def update_env(key, value):
-    dclient = {}
-    with open("/etc/default/dclient") as f:
+    env = LastUpdated()
+    with open(".env") as f:
         for line in f:
             (k, v) = line.split("=")
-            dclient[int(k)] = v
-    dclient[key] = value
+            env[k] = v
+    env[key] = value
 
-    with open("/etc/default/dclient", "w") as f:
-        for k in dclient.keys():
-            line = "{}={}".format(k, dclient[k])
+    with open(".env", "w") as f:
+        for k in env.keys():
+            line = "{}={}".format(k, env[k])
             f.write(line)
+
+
