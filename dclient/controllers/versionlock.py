@@ -4,7 +4,7 @@ import os
 def post_versionlock(data):
     try:
         for pkg in data["versionlock"]:
-            os.system("sudo yum versionlock add {}".format(pkg))
+            os.system(f"sudo yum versionlock add {pkg}")
         response = {
             "status": "success",
             "message": "New versionlock list successfully created.",

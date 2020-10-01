@@ -19,6 +19,9 @@ def check_in():
     :return:
     """
     update_env("STATE", "ACTIVE")
+    headers = {"Authorization": Config.TOKEN}
+    payload = {"hostname": Config.HOSTNAME, "state": "ACTIVE"}
+    requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload)
 
 
 def setup_client():
@@ -38,15 +41,14 @@ def setup_client():
             "url": Config.URL,
             "deployment_proxy": Config.DEPLOYMENT_PROXY
         }
-        r = requests.post("{}/register".format(Config.DEPLOYMENT_SERVER_URL), json=data, verify=False)
+        r = requests.post("{}/register".format(Config.DEPLOYMENT_SERVER_URL), json=data)
         resp = r.json()
         if "token" in resp:
             update_env("TOKEN", resp["token"])
             update_env("STATE", "ACTIVE")
             headers = {"Authorization": resp["token"]}
             payload = {"hostname": data["hostname"], "state": "ACTIVE"}
-            requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload,
-                           verify=False)
+            requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload)
 
 
 class DClient(WSGIApplication):

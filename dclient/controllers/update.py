@@ -11,17 +11,17 @@ def post_update():
     try:
         headers = {"Authorization": Config.TOKEN}
         payload = {"hostname": data["hostname"], "state": "UPDATING"}
-        requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
+        requests.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
 
         for pkg in data["packages"]:
-            os.system("sudo yum versionlock add {}".format(pkg))
+            os.system(f"sudo yum versionlock add {pkg}")
         install_pkgs(data["packages"])
 
         restart_service("dclient.service")
     except Exception as e:
         headers = {"Authorization": Config.TOKEN}
         payload = {"hostname": data["hostname"], "state": "ERROR"}
-        requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
+        requests.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
         response = {
             "status": "failed",
             "message": "POST update failed.",

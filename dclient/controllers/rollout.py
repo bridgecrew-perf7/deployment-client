@@ -10,11 +10,11 @@ def post_rollout():
 
     headers = {"Authorization": Config.TOKEN}
     payload = {"hostname": data["hostname"], "state": "updating"}
-    requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
+    requests.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
 
     try:
         for pkg in data["versionlock"]:
-            stat = os.system("yum versionlock add {}".format(pkg))
+            stat = os.system(f"yum versionlock add {pkg}")
             if stat != 0:
                 raise Exception(stat)
         install_pkgs(data["versionlock"])
@@ -29,15 +29,14 @@ def post_rollout():
         if stat != 0:
             raise Exception(stat)
 
-        # Post server_history (action, yum_transaction_id, yum_rollback_id)
         payload = {"deployment_id": int(data["deployment_id"]), "action": "Update", "state": "SUCCESS",
                    "output": "deployment was successful", "yum_transaction_id": yum_transaction_id,
                    "yum_rollback_id": yum_rollback_id}
-        requests.post("{}/server/history/{}".format(Config.DEPLOYMENT_SERVER_URL, data["hostname"]),
-                      headers=headers, json=payload, verify=False)
+        requests.post(f"{Config.DEPLOYMENT_SERVER_URL}/server/history/{data['hostname']}", headers=headers,
+                      json=payload, verify=False)
 
         payload = {"hostname": data["hostname"], "state": "ACTIVE"}
-        requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
+        requests.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
         
         response = {
             "status": "success",
@@ -45,17 +44,15 @@ def post_rollout():
         }
         return response, 201
     except Exception as e:
-        # Post state error
-        # Post server_history update failed
         payload = {"hostname": data["hostname"], "state": "ERROR"}
-        requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload, verify=False)
+        requests.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
         
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
         payload = {"deployment_id": int(data["deployment_id"]), "action": "Update", "state": "Failed",
                    "yum_transaction_id": yum_transaction_id, "yum_rollback_id": yum_rollback_id}
-        requests.post("{}/server/history/{}".format(Config.DEPLOYMENT_SERVER_URL, data["hostname"]),
-                      headers=headers, json=payload, verify=False)
+        requests.post(f"{Config.DEPLOYMENT_SERVER_URL}/server/history/{data['hostname']}", headers=headers,
+                      json=payload)
         
         response = {
             "status": "FAILED",
