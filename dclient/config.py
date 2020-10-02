@@ -81,7 +81,7 @@ def get_deployment_proxy():
 
 
 def get_token():
-    if os.getenv("TOKEN")
+    if os.getenv("TOKEN"):
         return os.getenv("TOKEN")
     else:
         data = {
