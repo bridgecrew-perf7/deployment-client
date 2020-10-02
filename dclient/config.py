@@ -95,7 +95,7 @@ def get_token():
             "url": get_url(),
             "deployment_proxy": get_deployment_proxy()
         }
-        r = requests.post("{}/register".format(Config.DEPLOYMENT_SERVER_URL), json=data)
+        r = requests.post(f"{get_deployment_server_url()}/register", json=data)
         resp = r.json()
         if "token" in resp["token"]:
             return resp["token"]
