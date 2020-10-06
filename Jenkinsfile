@@ -1,3 +1,3 @@
 #!/usr/bin/env groovy
 
-PythonProjectAsRPM( 'deployment-client' )
+PythonProjectAsRPM( 'dclient' )
