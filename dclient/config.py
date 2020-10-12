@@ -5,6 +5,24 @@ from dotenv import load_dotenv
 load_dotenv(".env")
 
 
+def get_logger():
+    logger = logging.getLogger("bhdapi")
+    logger.setLevel(logging.DEBUG)
+    fh = logging.FileHandler("/var/log/deployment/dclient.log")
+    fh.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.ERROR)
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    ch.setFormatter(formatter)
+    fh.setFormatter(formatter)
+    logger.addHandler(ch)
+    logger.addHandler(fh)
+    return logger
+
+
+logger = get_logger()
+
+
 def get_default(key):
     env = {}
     with open("/etc/default/dclient") as file:
@@ -97,7 +115,8 @@ def get_token():
         }
         r = requests.post(f"{get_deployment_server_url()}/register", json=data)
         resp = r.json()
-        if "token" in resp["token"]:
+        logger.info(resp)
+        if "token" in resp:
             return resp["token"]
         else:
             return None
@@ -115,17 +134,3 @@ class Config(object):
     DEPLOYMENT_PROXY = get_deployment_proxy()
     TOKEN = get_token()
 
-
-def get_logger():
-    logger = logging.getLogger("bhdapi")
-    logger.setLevel(logging.DEBUG)
-    fh = logging.FileHandler("/var/log/deployment/dclient.log")
-    fh.setLevel(logging.DEBUG)
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.ERROR)
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    ch.setFormatter(formatter)
-    fh.setFormatter(formatter)
-    logger.addHandler(ch)
-    logger.addHandler(fh)
-    return logger
