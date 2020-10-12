@@ -49,12 +49,15 @@ def update_env(key, value):
     env = LastUpdated()
     with open(".env") as f:
         for line in f:
-            (k, v) = line.split("=")
+            (k, v) = line.split("=", 1)
             env[k] = v
     env[key] = value
     os.environ[key] = value
 
     with open(".env", "w") as f:
         for k in env.keys():
-            line = f"{k}={env[k]}\n"
-            f.write(line)
+            line = f"{k}={env[k]}"
+            if "\n" in line:
+                f.write(line)
+            else:
+                f.write(line+"\n")
