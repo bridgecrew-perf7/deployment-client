@@ -39,7 +39,6 @@ def setup_client():
             os.environ["STATE"] = "ACTIVE"
 
 class DClient(WSGIApplication):
-
     def __init__(self, app, options=None):
         self.options = options or {}
         self.application = app
