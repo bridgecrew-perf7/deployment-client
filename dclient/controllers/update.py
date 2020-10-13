@@ -23,7 +23,8 @@ def post_update():
         payload = {"hostname": data["hostname"], "state": "ERROR"}
         requests.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
         response = {
-            "status": "failed",
+            "hostname": Config.HOSTNAME,
+            "status": "FAILED",
             "message": "POST update failed.",
             "exception": str(e)
         }

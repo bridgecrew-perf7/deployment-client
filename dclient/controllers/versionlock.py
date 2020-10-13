@@ -1,3 +1,5 @@
+from dclient.config import Config
+
 import os
 
 
@@ -6,13 +8,15 @@ def post_versionlock(data):
         for pkg in data["versionlock"]:
             os.system(f"sudo yum versionlock add {pkg}")
         response = {
-            "status": "success",
+            "hostname": Config.HOSTNAME,
+            "status": "SUCCESS",
             "message": "New versionlock list successfully created.",
         }
         return response, 201
     except:
         response = {
-            "status": "fail",
+            "hostname": Config.HOSTNAME,
+            "status": "FAILED",
             "message": "POST versionlock list failed.",
         }
         return response, 409
@@ -25,14 +29,16 @@ def get_versionlock():
         versionlock.pop(0)
         versionlock.pop()
         response = {
-            "status": "success",
+            "hostname": Config.HOSTNAME,
+            "status": "SUCCESS",
             "message": "Versionlock list successfully retrieved",
             "versionlock": versionlock,
         }
         return response, 200
     except:
         response = {
-            "status": "failure",
+            "hostname": Config.HOSTNAME,
+            "status": "FAILED",
             "message": "Failed to GET versionlock list"
         }
         return response, 409

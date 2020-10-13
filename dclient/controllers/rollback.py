@@ -38,6 +38,7 @@ def post_rollback():
 
         response = {
             "body": {
+                "hostname": Config.HOSTNAME,
                 "status": "SUCCESS",
                 "message": "Deployment successfully rolled back.",
             },
@@ -56,7 +57,8 @@ def post_rollback():
                       json=payload)
         
         response = {
-            "status": "fail",
+            "hostname": Config.HOSTNAME,
+            "status": "FAILED",
             "message": "Deployment rollback failed.",
             "exception": str(e)
         }

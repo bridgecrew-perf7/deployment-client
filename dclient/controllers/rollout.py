@@ -39,7 +39,8 @@ def post_rollout():
         requests.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
         
         response = {
-            "status": "success",
+            "hostname": Config.HOSTNAME,
+            "status": "SUCCESS",
             "message": "Rollout successfully executed.",
         }
         return response, 201
@@ -55,6 +56,7 @@ def post_rollout():
                       json=payload)
         
         response = {
+            "hostname": Config.HOSTNAME,
             "status": "FAILED",
             "message": "POST rollout failed.",
             "exception": str(e)
