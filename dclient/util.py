@@ -12,7 +12,7 @@ class LastUpdated(OrderedDict):
 
 
 def get_yum_transaction_id():
-    history_list = check_output(["yum", "history", "list"])
+    history_list = check_output(["sudo", "yum", "history", "list"])
     history_list = history_list.splitlines()
     count = 0
     fl = 0
@@ -42,19 +42,22 @@ def install_pkgs(packages):
 
 
 def restart_service(service):
-    Popen(["systemctl", "restart", service])
+    Popen(["sudo", "systemctl", "restart", service])
 
 
 def update_env(key, value):
     env = LastUpdated()
-    with open(".env") as f:
+    with open("/etc/default/dclient") as f:
         for line in f:
-            (k, v) = line.split("=")
+            (k, v) = line.split("=", 1)
             env[k] = v
     env[key] = value
     os.environ[key] = value
 
-    with open(".env", "w") as f:
+    with open("/etc/default/dclient", "w") as f:
         for k in env.keys():
-            line = f"{k}={env[k]}\n"
-            f.write(line)
+            line = f"{k}={env[k]}"
+            if "\n" in line:
+                f.write(line)
+            else:
+                f.write(line+"\n")

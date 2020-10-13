@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+import os
 import requests
 from flask import Flask, request
 from gunicorn.app.wsgiapp import WSGIApplication
@@ -11,17 +11,6 @@ from dclient.controllers.rollout import post_rollout
 from dclient.controllers.rollback import post_rollback
 from dclient.controllers.healthcheck import get_healthcheck
 from dclient.controllers.versionlock import post_versionlock, get_versionlock
-
-
-def check_in():
-    """
-    Update proxy state when it comes up.
-    :return:
-    """
-    update_env("STATE", "ACTIVE")
-    headers = {"Authorization": Config.TOKEN}
-    payload = {"hostname": Config.HOSTNAME, "state": "ACTIVE"}
-    requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload)
 
 
 def setup_client():
@@ -46,10 +35,8 @@ def setup_client():
         if "token" in resp:
             update_env("TOKEN", resp["token"])
             update_env("STATE", "ACTIVE")
-            headers = {"Authorization": resp["token"]}
-            payload = {"hostname": data["hostname"], "state": "ACTIVE"}
-            requests.patch("{}/server".format(Config.DEPLOYMENT_SERVER_URL), headers=headers, json=payload)
-
+            os.environ["TOKEN"] = resp["token"]
+            os.environ["STATE"] = "ACTIVE"
 
 class DClient(WSGIApplication):
 
@@ -74,7 +61,6 @@ def create_app():
     :return: app
     """
     setup_client()
-    check_in()
 
     app = Flask(__name__)
     app.config.from_object(Config)

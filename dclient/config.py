@@ -1,18 +1,12 @@
 import os
 import logging
 from dotenv import load_dotenv
-load_dotenv(".env")
+load_dotenv("/etc/default/dclient")
 
 
 class Config:
-    if "PUBLIC_IP" in os.environ:
-        ip = os.getenv("PUBLIC_IP")
-    else:
-        ip = os.getenv("IP")
-    USERNAME = os.getenv("USERNAME")
-    PASSWORD = os.getenv("PASSWORD")
     HOSTNAME = os.getenv("HOSTNAME")
-    IP = ip
+    IP = os.getenv("IP")
     STATE = os.getenv("STATE")
     LOCATION = os.getenv("LOCATION")
     ENVIRONMENT = os.getenv("ENVIRONMENT")

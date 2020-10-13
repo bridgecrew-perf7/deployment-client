@@ -12,7 +12,7 @@ def post_rollback():
     data = request.get_json()
     logger.info(data)
     headers = {"Authorization": Config.TOKEN}
-    payload = {"hostname": data["hostname"], "state": "updating"}
+    payload = {"hostname": data["hostname"], "state": "UPDATING"}
     requests.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
     
     try:
@@ -50,7 +50,7 @@ def post_rollback():
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
         
-        payload = {"deployment_id": data["deployment_id"], "action": "Update", "state": "Failed",
+        payload = {"deployment_id": data["deployment_id"], "action": "Update", "state": "FAILED",
                    "yum_transaction_id": yum_transaction_id, "yum_rollback_id": yum_rollback_id}
         requests.post(f"{Config.DEPLOYMENT_SERVER_URL}/server/history/{data['hostname']}", headers=headers,
                       json=payload)
