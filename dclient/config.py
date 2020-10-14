@@ -87,7 +87,7 @@ def get_deployment_server_url():
     if os.getenv("DEPLOYMENT_SERVER_URL"):
         return os.getenv("DEPLOYMENT_SERVER_URL")
     else:
-        return "http://deploy-proxy.hp.provo1.endurancemb.com/api/1.0.0"
+        return "http://deploy-proxy.hp.provo1.endurancemb.com:8002/api/1.0.0"
 
 
 def get_deployment_proxy():
