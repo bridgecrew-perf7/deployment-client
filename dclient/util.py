@@ -10,6 +10,46 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 
+def set_state():
+    """
+    Set the dclient state to the correct state.
+    Keep the state in sync with Deployment-api
+    :return:
+    """
+    if not os.getenv("TOKEN"):
+        register_dclient()
+    else:
+        update_env("STATE", "ACTIVE")
+        headers = {"Authorization": Config.TOKEN}
+        payload = {"hostname": Config.HOSTNAME, "state": "UPDATING"}
+        http = get_http()
+        http.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
+
+
+def register_dclient():
+    """
+    Register dclient and fetch token
+    :return:
+    """
+    data = {
+        "created_by": "dclient",
+        "hostname": Config.HOSTNAME,
+        "ip": Config.IP,
+        "state": "NEW",
+        "group": Config.GROUP,
+        "environment": Config.ENVIRONMENT,
+        "location": Config.LOCATION,
+        "url": Config.URL,
+        "deployment_proxy": Config.DEPLOYMENT_PROXY
+    }
+    http = get_http()
+    r = http.post("{}/register".format(Config.DEPLOYMENT_SERVER_URL), json=data)
+    resp = r.json()
+    if "token" in resp:
+        update_env("TOKEN", resp["token"])
+        update_env("STATE", "ACTIVE")
+
+
 def get_http():
     retry_strategy = Retry(
         total=Config.RETRY,
