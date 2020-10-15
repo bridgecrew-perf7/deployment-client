@@ -1,7 +1,11 @@
+from dclient.config import get_logger
+
 import os
 import re
 from collections import OrderedDict
 from subprocess import Popen, check_output
+
+logger = get_logger()
 
 
 class LastUpdated(OrderedDict):
@@ -12,6 +16,7 @@ class LastUpdated(OrderedDict):
 
 
 def get_yum_transaction_id():
+    logger.info("running check_output(['sudo', 'yum', 'history', 'list''])")
     history_list = check_output(["sudo", "yum", "history", "list"])
     history_list = history_list.splitlines()
     count = 0
@@ -34,17 +39,21 @@ def get_yum_transaction_id():
 
 def install_pkgs(packages):
     packages = ' '.join(map(str, packages))
+    logger.info("running os.system('sudo yum clean all')")
     os.system("sudo yum clean all")
+    logger.info(f"running sudo yum --enablerepo=Production -y install {packages}")
     stat = os.system(f"sudo yum --enablerepo=Production -y install {packages}")
     if stat != 0:
         raise Exception(stat)
 
 
 def restart_service(service):
+    logger.info(f"running Popen(['sudo', 'systemctl', 'restart', {service}])")
     Popen(["sudo", "systemctl", "restart", service])
 
 
 def update_env(key, value):
+    logger.info(f"Updating Environment: {key}={value}")
     env = LastUpdated()
     with open("/etc/default/dclient") as f:
         for line in f:

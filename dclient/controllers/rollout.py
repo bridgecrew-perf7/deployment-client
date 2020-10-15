@@ -14,7 +14,7 @@ def post_rollout():
 
     try:
         for pkg in data["versionlock"]:
-            stat = os.system(f"yum versionlock add {pkg}")
+            stat = os.system(f"sudo yum versionlock add {pkg}")
             if stat != 0:
                 raise Exception(stat)
         install_pkgs(data["versionlock"])

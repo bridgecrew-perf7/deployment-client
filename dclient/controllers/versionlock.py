@@ -1,12 +1,20 @@
-from dclient.config import Config
+from dclient.config import Config, get_logger
 
 import os
+import re
+from subprocess import Popen, check_output
+
+logger = get_logger()
 
 
 def post_versionlock(data):
     try:
+        logger.info("Updating Versionlock")
         for pkg in data["versionlock"]:
-            os.system(f"sudo yum versionlock add {pkg}")
+            logger.info(f"sudo yum versionlock add {pkg}")
+            stat = os.system(f"sudo yum versionlock add {pkg}")
+            if stat != 0:
+                raise Exception(stat)
         response = {
             "hostname": Config.HOSTNAME,
             "status": "SUCCESS",
@@ -24,15 +32,23 @@ def post_versionlock(data):
 
 def get_versionlock():
     try:
-        versionlock = os.system("sudo yum versionlock list")
+        logger.info("Getting Versionlock")
+        logger.info("check_output(['sudo', 'yum', 'versionlock', 'list'])")
+        versionlock_list = []
+        versionlock = check_output(["sudo", "yum", "versionlock", "list"])
         versionlock = versionlock.splitlines()
         versionlock.pop(0)
-        versionlock.pop()
+        for vl in versionlock:
+            z = re.match("done", vl)
+            if z:
+                break
+            else:
+                versionlock_list.append(vl)
         response = {
             "hostname": Config.HOSTNAME,
             "status": "SUCCESS",
             "message": "Versionlock list successfully retrieved",
-            "versionlock": versionlock,
+            "versionlock": versionlock_list,
         }
         return response, 200
     except:
