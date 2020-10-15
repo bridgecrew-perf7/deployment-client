@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 import os
-import requests
 from flask import Flask, request
 from gunicorn.app.wsgiapp import WSGIApplication
 
 from dclient.config import Config
-from dclient.util import update_env
+from dclient.util import update_env, get_http
 from dclient.controllers.update import post_update
 from dclient.controllers.rollout import post_rollout
 from dclient.controllers.rollback import post_rollback
@@ -30,13 +29,15 @@ def setup_client():
             "url": Config.URL,
             "deployment_proxy": Config.DEPLOYMENT_PROXY
         }
-        r = requests.post("{}/register".format(Config.DEPLOYMENT_SERVER_URL), json=data)
+        http = get_http()
+        r = http.post("{}/register".format(Config.DEPLOYMENT_SERVER_URL), json=data)
         resp = r.json()
         if "token" in resp:
             update_env("TOKEN", resp["token"])
             update_env("STATE", "ACTIVE")
             os.environ["TOKEN"] = resp["token"]
             os.environ["STATE"] = "ACTIVE"
+
 
 class DClient(WSGIApplication):
     def __init__(self, app, options=None):

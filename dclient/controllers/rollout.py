@@ -1,8 +1,7 @@
 import os
-import requests
 from flask import request
 from dclient.config import Config
-from dclient.util import get_yum_transaction_id, install_pkgs, restart_service, get_installed
+from dclient.util import get_yum_transaction_id, install_pkgs, restart_service, get_installed, get_http
 
 
 def post_rollout():
@@ -10,7 +9,8 @@ def post_rollout():
 
     headers = {"Authorization": Config.TOKEN}
     payload = {"hostname": data["hostname"], "state": "UPDATING"}
-    requests.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
+    http = get_http()
+    http.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
 
     try:
         for pkg in data["versionlock"]:
@@ -36,11 +36,13 @@ def post_rollout():
         payload = {"deployment_id": int(data["deployment_id"]), "action": "Update", "state": "SUCCESS",
                    "output": "deployment was successful", "yum_transaction_id": yum_transaction_id,
                    "yum_rollback_id": yum_rollback_id}
-        requests.post(f"{Config.DEPLOYMENT_SERVER_URL}/server/history/{data['hostname']}", headers=headers,
+        http = get_http()
+        http.post(f"{Config.DEPLOYMENT_SERVER_URL}/server/history/{data['hostname']}", headers=headers,
                       json=payload, verify=False)
 
         payload = {"hostname": data["hostname"], "state": "ACTIVE"}
-        requests.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
+        http = get_http()
+        http.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
         
         response = {
             "hostname": Config.HOSTNAME,
@@ -50,13 +52,15 @@ def post_rollout():
         return response, 201
     except Exception as e:
         payload = {"hostname": data["hostname"], "state": "ERROR"}
-        requests.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
+        http = get_http()
+        http.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
         
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
         payload = {"deployment_id": int(data["deployment_id"]), "action": "Update", "state": "FAILED",
                    "yum_transaction_id": yum_transaction_id, "yum_rollback_id": yum_rollback_id}
-        requests.post(f"{Config.DEPLOYMENT_SERVER_URL}/server/history/{data['hostname']}", headers=headers,
+        http = get_http()
+        http.post(f"{Config.DEPLOYMENT_SERVER_URL}/server/history/{data['hostname']}", headers=headers,
                       json=payload)
         
         response = {

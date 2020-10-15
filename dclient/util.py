@@ -1,8 +1,26 @@
+from dclient.config import Config
+
 import os
 import re
 import logging
+import requests
 from collections import OrderedDict
 from subprocess import Popen, check_output
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+
+def get_http():
+    retry_strategy = Retry(
+        total=Config.RETRY,
+        status_forcelist=[429, 500, 502, 503, 504],
+        method_whitelist=["HEAD", "GET", "OPTIONS"]
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    http = requests.Session()
+    http.mount("https://", adapter)
+    http.mount("http://", adapter)
+    return http
 
 
 def get_logger():

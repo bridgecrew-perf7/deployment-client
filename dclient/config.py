@@ -1,6 +1,7 @@
 from dclient.util import update_env
 
 import os
+import socket
 import logging
 import requests
 from dotenv import load_dotenv
@@ -26,13 +27,16 @@ def get_env(var):
     if var in os.environ:
         return os.getenv(var)
     else:
+        hostname = socket.gethostname()
+        ip = socket.gethostbyname(hostname)
         default = {
-            "HOSTNAME": "",
-            "IP": "",
+            "HOSTNAME": hostname,
+            "IP": ip,
             "STATE": "NEW",
             "LOCATION": "PROVO",
             "ENVIRONMENT": "PRODUCTION",
-            "GROUP": ""
+            "GROUP": "",
+            "RETRY": 10
         }
         return default[var]
 
@@ -100,4 +104,5 @@ class Config(object):
     DEPLOYMENT_SERVER_URL = get_deployment_server_url()
     DEPLOYMENT_PROXY = get_deployment_proxy()
     TOKEN = get_token()
+    RETRY = get_env("RETRY")
 
