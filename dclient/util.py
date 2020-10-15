@@ -1,9 +1,24 @@
-from dclient.config import get_logger
-
 import os
 import re
+import logging
 from collections import OrderedDict
 from subprocess import Popen, check_output
+
+
+def get_logger():
+    logger = logging.getLogger("dclient")
+    logger.setLevel(logging.DEBUG)
+    fh = logging.FileHandler("/var/log/deployment/dclient.log")
+    fh.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.ERROR)
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    ch.setFormatter(formatter)
+    fh.setFormatter(formatter)
+    logger.addHandler(ch)
+    logger.addHandler(fh)
+    return logger
+
 
 logger = get_logger()
 
@@ -13,6 +28,16 @@ class LastUpdated(OrderedDict):
     def __setitem__(self, key, value):
         super().__setitem__(key, value)
         self.move_to_end(key)
+
+
+def get_installed(rpm):
+    logger.info(f"running check_output(['rpm', '-q', {rpm}])")
+    installed = check_output(["rpm", "-q", rpm])
+    z = re.match("not installed", installed)
+    if z:
+        return False
+    else:
+        return True
 
 
 def get_yum_transaction_id():

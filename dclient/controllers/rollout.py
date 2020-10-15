@@ -2,7 +2,7 @@ import os
 import requests
 from flask import request
 from dclient.config import Config
-from dclient.util import get_yum_transaction_id, install_pkgs, restart_service
+from dclient.util import get_yum_transaction_id, install_pkgs, restart_service, get_installed
 
 
 def post_rollout():
@@ -17,6 +17,10 @@ def post_rollout():
             stat = os.system(f"sudo yum versionlock add {pkg}")
             if stat != 0:
                 raise Exception(stat)
+        if not get_installed("httpd"):
+            data["versionlock"].append("httpd")
+        if not get_installed("mod_perl"):
+            data["versionlock"].append("mod_perl")
         install_pkgs(data["versionlock"])
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1

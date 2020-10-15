@@ -8,7 +8,7 @@ load_dotenv("/etc/default/dclient")
 
 
 def get_logger():
-    logger = logging.getLogger("bhdapi")
+    logger = logging.getLogger("dclient")
     logger.setLevel(logging.DEBUG)
     fh = logging.FileHandler("/var/log/deployment/dclient.log")
     fh.setLevel(logging.DEBUG)
@@ -20,9 +20,6 @@ def get_logger():
     logger.addHandler(ch)
     logger.addHandler(fh)
     return logger
-
-
-logger = get_logger()
 
 
 def get_env(var):
@@ -85,7 +82,6 @@ def get_token():
         }
         r = requests.post(f"{get_deployment_server_url()}/register", json=data)
         resp = r.json()
-        logger.info(resp)
         if "token" in resp:
             update_env("TOKEN", resp["token"])
             return resp["token"]

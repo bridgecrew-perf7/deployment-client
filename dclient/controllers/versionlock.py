@@ -2,7 +2,7 @@ from dclient.config import Config, get_logger
 
 import os
 import re
-from subprocess import Popen, check_output
+from subprocess import check_output
 
 logger = get_logger()
 
