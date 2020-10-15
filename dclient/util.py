@@ -1,7 +1,7 @@
 import os
 import re
 from collections import OrderedDict
-from subprocess import Popen, check_call, check_output
+from subprocess import Popen, check_output
 
 
 class LastUpdated(OrderedDict):
@@ -33,10 +33,9 @@ def get_yum_transaction_id():
 
 
 def install_pkgs(packages):
-    packages = [x.encode('utf-8') for x in packages]
-    packages = ' '.join(packages)
-    check_call("sudo yum clean all")
-    stat = check_call("sudo yum -y --enablerepo=Production install {}".format(packages))
+    packages = ' '.join(map(str, packages))
+    os.system("sudo yum clean all")
+    stat = os.system(f"sudo yum --enablerepo=Production -y install {packages}")
     if stat != 0:
         raise Exception(stat)
 

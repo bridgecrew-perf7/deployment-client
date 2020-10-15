@@ -25,6 +25,21 @@ def get_logger():
 logger = get_logger()
 
 
+def get_env(var):
+    if var in os.environ:
+        return os.getenv(var)
+    else:
+        default = {
+            "HOSTNAME": "",
+            "IP": "",
+            "STATE": "NEW",
+            "LOCATION": "PROVO",
+            "ENVIRONMENT": "PRODUCTION",
+            "GROUP": ""
+        }
+        return default[var]
+
+
 def get_url():
     if os.getenv("URL"):
         return os.getenv("URL")
@@ -59,12 +74,12 @@ def get_token():
     else:
         data = {
             "created_by": "dclient",
-            "hostname": os.getenv("HOSTNAME"),
-            "ip": os.getenv("IP"),
+            "hostname": get_env("HOSTNAME"),
+            "ip": get_env("IP"),
             "state": "NEW",
-            "group": os.getenv("GROUP"),
-            "environment": os.getenv("ENVIRONMENT"),
-            "location": os.getenv("LOCATION"),
+            "group": get_env("GROUP"),
+            "environment": get_env("ENVIRONMENT"),
+            "location": get_env("LOCATION"),
             "url": get_url(),
             "deployment_proxy": get_deployment_proxy()
         }
@@ -79,12 +94,12 @@ def get_token():
 
 
 class Config(object):
-    HOSTNAME = os.getenv("HOSTNAME")
-    IP = os.getenv("IP")
-    STATE = os.getenv("STATE")
-    LOCATION = os.getenv("LOCATION")
-    ENVIRONMENT = os.getenv("ENVIRONMENT")
-    GROUP = os.getenv("GROUP")
+    HOSTNAME = get_env("HOSTNAME")
+    IP = get_env("IP")
+    STATE = get_env("STATE")
+    LOCATION = get_env("LOCATION")
+    ENVIRONMENT = get_env("ENVIRONMENT")
+    GROUP = get_env("GROUP")
     URL = get_url()
     DEPLOYMENT_SERVER_URL = get_deployment_server_url()
     DEPLOYMENT_PROXY = get_deployment_proxy()
