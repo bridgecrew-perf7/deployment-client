@@ -1,8 +1,7 @@
 import os
 from flask import request
 
-from dclient.config import Config
-from dclient.util import install_pkgs, restart_service, get_http
+from dclient.util import Config, get_http, install_pkgs, restart_service
 
 
 def post_update():

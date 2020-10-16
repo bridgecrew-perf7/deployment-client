@@ -1,4 +1,4 @@
-from dclient.config import Config
+from dclient.util import Config
 
 
 def get_healthcheck():

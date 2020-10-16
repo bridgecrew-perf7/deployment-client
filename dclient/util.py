@@ -1,66 +1,15 @@
-from dclient.config import Config
-
 import os
 import re
+import socket
 import logging
 import requests
+from dotenv import load_dotenv
 from collections import OrderedDict
-from subprocess import Popen, check_output
 from requests.adapters import HTTPAdapter
+from subprocess import Popen, check_output
 from requests.packages.urllib3.util.retry import Retry
 
-
-def set_state():
-    """
-    Set the dclient state to the correct state.
-    Keep the state in sync with Deployment-api
-    :return:
-    """
-    if not os.getenv("TOKEN"):
-        register_dclient()
-    else:
-        update_env("STATE", "ACTIVE")
-        headers = {"Authorization": Config.TOKEN}
-        payload = {"hostname": Config.HOSTNAME, "state": "UPDATING"}
-        http = get_http()
-        http.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
-
-
-def register_dclient():
-    """
-    Register dclient and fetch token
-    :return:
-    """
-    data = {
-        "created_by": "dclient",
-        "hostname": Config.HOSTNAME,
-        "ip": Config.IP,
-        "state": "NEW",
-        "group": Config.GROUP,
-        "environment": Config.ENVIRONMENT,
-        "location": Config.LOCATION,
-        "url": Config.URL,
-        "deployment_proxy": Config.DEPLOYMENT_PROXY
-    }
-    http = get_http()
-    r = http.post("{}/register".format(Config.DEPLOYMENT_SERVER_URL), json=data)
-    resp = r.json()
-    if "token" in resp:
-        update_env("TOKEN", resp["token"])
-        update_env("STATE", "ACTIVE")
-
-
-def get_http():
-    retry_strategy = Retry(
-        total=Config.RETRY,
-        status_forcelist=[429, 500, 502, 503, 504],
-        method_whitelist=["HEAD", "GET", "OPTIONS"]
-    )
-    adapter = HTTPAdapter(max_retries=retry_strategy)
-    http = requests.Session()
-    http.mount("https://", adapter)
-    http.mount("http://", adapter)
-    return http
+load_dotenv("/etc/default/dclient")
 
 
 def get_logger():
@@ -136,19 +85,166 @@ def restart_service(service):
 
 
 def update_env(key, value):
+    """
+    Update environment variables and store environment file
+    :param key:
+    :param value:
+    :return:
+    """
     logger.info(f"Updating Environment: {key}={value}")
     env = LastUpdated()
-    with open("/etc/default/dclient") as f:
+    with open(Config.ENV_FILE) as f:
         for line in f:
             (k, v) = line.split("=", 1)
             env[k] = v
     env[key] = value
     os.environ[key] = value
 
-    with open("/etc/default/dclient", "w") as f:
+    with open(Config.ENV_FILE, "w") as f:
         for k in env.keys():
             line = f"{k}={env[k]}"
             if "\n" in line:
                 f.write(line)
             else:
                 f.write(line+"\n")
+
+
+def get_http():
+    retry_strategy = Retry(
+        total=Config.RETRY,
+        status_forcelist=[429, 500, 502, 503, 504],
+        method_whitelist=["HEAD", "GET", "OPTIONS"]
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    http = requests.Session()
+    http.mount("https://", adapter)
+    http.mount("http://", adapter)
+    return http
+
+
+def set_state():
+    """
+    Set the dclient state to the correct state.
+    Keep the state in sync with Deployment-api
+    :return:
+    """
+    if not os.getenv("TOKEN"):
+        register_dclient()
+    else:
+        update_env("STATE", "ACTIVE")
+        headers = {"Authorization": Config.TOKEN}
+        payload = {"hostname": Config.HOSTNAME, "state": "UPDATING"}
+        http = get_http()
+        http.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
+
+
+def register_dclient():
+    """
+    Register dclient and fetch token
+    :return:
+    """
+    data = {
+        "created_by": "dclient",
+        "hostname": Config.HOSTNAME,
+        "ip": Config.IP,
+        "state": "NEW",
+        "group": Config.GROUP,
+        "environment": Config.ENVIRONMENT,
+        "location": Config.LOCATION,
+        "url": Config.URL,
+        "deployment_proxy": Config.DEPLOYMENT_PROXY
+    }
+    http = get_http()
+    r = http.post("{}/register".format(Config.DEPLOYMENT_SERVER_URL), json=data)
+    resp = r.json()
+    logger.info(f"REGISTER CLIENT: {resp}")
+    if "token" in resp:
+        update_env("TOKEN", resp["token"])
+        update_env("STATE", "ACTIVE")
+
+
+def get_env(var):
+    if var in os.environ:
+        return os.getenv(var)
+    else:
+        hostname = socket.gethostname()
+        ip = socket.gethostbyname(hostname)
+        default = {
+            "HOSTNAME": hostname,
+            "IP": ip,
+            "STATE": "NEW",
+            "LOCATION": "PROVO",
+            "ENVIRONMENT": "PRODUCTION",
+            "GROUP": "",
+            "RETRY": 10,
+            "ENV_FILE": "/etc/default/dclient"
+        }
+        return default[var]
+
+
+def get_url():
+    if os.getenv("URL"):
+        return os.getenv("URL")
+    else:
+        if os.getenv("HOSTNAME"):
+            url = f"http://{os.getenv('HOSTNAME')}:8003/"
+            update_env("URL", url)
+            return url
+        else:
+            return None
+
+
+def get_deployment_server_url():
+    if os.getenv("DEPLOYMENT_SERVER_URL"):
+        return os.getenv("DEPLOYMENT_SERVER_URL")
+    else:
+        update_env("DEPLOYMENT_SERVER_URL", "http://deploy-proxy.hp.provo1.endurancemb.com:8002/api/1.0.0")
+        return "http://deploy-proxy.hp.provo1.endurancemb.com:8002/api/1.0.0"
+
+
+def get_deployment_proxy():
+    if os.getenv("DEPLOYMENT_PROXY"):
+        return os.getenv("DEPLOYMENT_PROXY")
+    else:
+        update_env("DEPLOYMENT_PROXY", "deploy-proxy.hp.provo1.endurancemb.com")
+        return "deploy-proxy.hp.provo1.endurancemb.com"
+
+
+def get_token():
+    if os.getenv("TOKEN"):
+        return os.getenv("TOKEN")
+    else:
+        data = {
+            "created_by": "dclient",
+            "hostname": get_env("HOSTNAME"),
+            "ip": get_env("IP"),
+            "state": "NEW",
+            "group": get_env("GROUP"),
+            "environment": get_env("ENVIRONMENT"),
+            "location": get_env("LOCATION"),
+            "url": get_url(),
+            "deployment_proxy": get_deployment_proxy()
+        }
+        http = get_http()
+        r = http.post(f"{get_deployment_server_url()}/register", json=data)
+        resp = r.json()
+        if "token" in resp:
+            update_env("TOKEN", resp["token"])
+            return resp["token"]
+        else:
+            return None
+
+
+class Config(object):
+    HOSTNAME = get_env("HOSTNAME")
+    IP = get_env("IP")
+    STATE = get_env("STATE")
+    LOCATION = get_env("LOCATION")
+    ENVIRONMENT = get_env("ENVIRONMENT")
+    GROUP = get_env("GROUP")
+    URL = get_url()
+    DEPLOYMENT_SERVER_URL = get_deployment_server_url()
+    DEPLOYMENT_PROXY = get_deployment_proxy()
+    TOKEN = get_token()
+    RETRY = get_env("RETRY")
+    ENV_FILE = get_env("ENV_FILE")

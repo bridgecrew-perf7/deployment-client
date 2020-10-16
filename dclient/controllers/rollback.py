@@ -1,8 +1,7 @@
 import os
 from flask import request
 
-from dclient.config import Config, get_logger
-from dclient.util import get_yum_transaction_id, restart_service, get_http
+from dclient.util import Config, get_logger, get_http, get_yum_transaction_id, restart_service
 
 logger = get_logger()
 
