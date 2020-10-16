@@ -10,6 +10,7 @@ python-dotenv = "*"
 requests = "*"
 flask = "*"
 gunicorn = "*"
+dclient = {editable = true, path = "."}
 
 [requires]
 python_version = "3.8"

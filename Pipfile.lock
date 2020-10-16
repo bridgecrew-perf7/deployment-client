@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "6702a5e3edd7a20d2ae406745eefbbce85565dee5e8e0f637909e171b0c8bf5f"
+            "sha256": "3416467d4f2de59405c67a304611a714248dfb4a102b316862ec29014ea06427"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -37,6 +37,10 @@
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'",
             "version": "==7.1.2"
+        },
+        "dclient": {
+            "editable": true,
+            "path": "."
         },
         "flask": {
             "hashes": [
