@@ -1,26 +1,14 @@
-from dclient.config import Config
-
 import os
 import re
 import logging
 import requests
+from dotenv import load_dotenv
 from collections import OrderedDict
-from subprocess import Popen, check_output
 from requests.adapters import HTTPAdapter
+from subprocess import Popen, check_output
 from requests.packages.urllib3.util.retry import Retry
 
-
-def get_http():
-    retry_strategy = Retry(
-        total=Config.RETRY,
-        status_forcelist=[429, 500, 502, 503, 504],
-        method_whitelist=["HEAD", "GET", "OPTIONS"]
-    )
-    adapter = HTTPAdapter(max_retries=retry_strategy)
-    http = requests.Session()
-    http.mount("https://", adapter)
-    http.mount("http://", adapter)
-    return http
+load_dotenv("/etc/default/dclient")
 
 
 def get_logger():
@@ -96,6 +84,12 @@ def restart_service(service):
 
 
 def update_env(key, value):
+    """
+    Update environment variables and store environment file
+    :param key:
+    :param value:
+    :return:
+    """
     logger.info(f"Updating Environment: {key}={value}")
     env = LastUpdated()
     with open("/etc/default/dclient") as f:
@@ -112,3 +106,17 @@ def update_env(key, value):
                 f.write(line)
             else:
                 f.write(line+"\n")
+
+
+def get_http():
+    retry_strategy = Retry(
+        total=10,
+        status_forcelist=[429, 500, 502, 503, 504],
+        method_whitelist=["HEAD", "GET", "OPTIONS", "TRACE"]
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    http = requests.Session()
+    http.mount("https://", adapter)
+    http.mount("http://", adapter)
+    return http
+

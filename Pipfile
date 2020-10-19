@@ -6,6 +6,12 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
+python-dotenv = "*"
+requests = "*"
+flask = "*"
+gunicorn = "*"
+dclient = {editable = true, path = "."}
+certifi = "*"
 devpi-client = "*"
 
 [requires]

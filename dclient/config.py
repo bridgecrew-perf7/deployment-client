@@ -1,11 +1,8 @@
-from dclient.util import update_env
+from dclient.util import update_env, get_http
 
 import os
 import socket
 import logging
-import requests
-from dotenv import load_dotenv
-load_dotenv("/etc/default/dclient")
 
 
 def get_logger():
@@ -23,6 +20,9 @@ def get_logger():
     return logger
 
 
+logger = get_logger()
+
+
 def get_env(var):
     if var in os.environ:
         return os.getenv(var)
@@ -36,7 +36,8 @@ def get_env(var):
             "LOCATION": "PROVO",
             "ENVIRONMENT": "PRODUCTION",
             "GROUP": "",
-            "RETRY": 10
+            "RETRY": 10,
+            "ENV_FILE": "/etc/default/dclient"
         }
         return default[var]
 
@@ -84,7 +85,8 @@ def get_token():
             "url": get_url(),
             "deployment_proxy": get_deployment_proxy()
         }
-        r = requests.post(f"{get_deployment_server_url()}/register", json=data)
+        http = get_http()
+        r = http.post(f"{get_deployment_server_url()}/register", json=data)
         resp = r.json()
         if "token" in resp:
             update_env("TOKEN", resp["token"])
@@ -105,4 +107,41 @@ class Config(object):
     DEPLOYMENT_PROXY = get_deployment_proxy()
     TOKEN = get_token()
     RETRY = get_env("RETRY")
+    ENV_FILE = get_env("ENV_FILE")
 
+
+def set_state():
+    """
+    Set the dclient state to the correct state.
+    Keep the state in sync with Deployment-api
+    :return:
+    """
+    if not os.getenv("TOKEN"):
+        register_dclient()
+    else:
+        update_env("STATE", "ACTIVE")
+
+
+def register_dclient():
+    """
+    Register dclient and fetch token
+    :return:
+    """
+    data = {
+        "created_by": "dclient",
+        "hostname": Config.HOSTNAME,
+        "ip": Config.IP,
+        "state": "NEW",
+        "group": Config.GROUP,
+        "environment": Config.ENVIRONMENT,
+        "location": Config.LOCATION,
+        "url": Config.URL,
+        "deployment_proxy": Config.DEPLOYMENT_PROXY
+    }
+    http = get_http()
+    r = http.post("{}/register".format(Config.DEPLOYMENT_SERVER_URL), json=data)
+    resp = r.json()
+    logger.info(f"REGISTER CLIENT: {resp}")
+    if "token" in resp:
+        update_env("TOKEN", resp["token"])
+        update_env("STATE", "ACTIVE")

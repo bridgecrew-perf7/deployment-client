@@ -1,7 +1,7 @@
 import os
 from flask import request
 from dclient.config import Config
-from dclient.util import get_yum_transaction_id, install_pkgs, restart_service, get_installed, get_http
+from dclient.util import get_http, get_yum_transaction_id, install_pkgs, restart_service, get_installed
 
 
 def post_rollout():
