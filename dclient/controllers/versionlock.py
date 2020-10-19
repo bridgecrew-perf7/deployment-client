@@ -1,4 +1,4 @@
-from dclient.util import Config, get_logger
+from dclient.config import Config, get_logger
 
 import os
 import re

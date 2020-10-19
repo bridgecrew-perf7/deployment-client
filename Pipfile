@@ -12,6 +12,7 @@ flask = "*"
 gunicorn = "*"
 dclient = {editable = true, path = "."}
 certifi = "*"
+devpi-client = "*"
 
 [requires]
 python_version = "3.8"

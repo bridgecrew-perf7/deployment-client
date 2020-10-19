@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from dclient.util import Config, set_state
+from dclient.config import Config, set_state
 from dclient.controllers.update import post_update
 from dclient.controllers.rollout import post_rollout
 from dclient.controllers.rollback import post_rollback

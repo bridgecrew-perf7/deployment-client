@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-export PYTHONPATH=/Users/jmbushman/.local/share/virtualenvs
+export PYTHONPATH=$PWD
 pipenv run dclient/dclient

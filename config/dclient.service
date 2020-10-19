@@ -3,8 +3,8 @@ Description=Bluehost Deployment Client service
 After=network.target
 
 [Service]
-User=root
-Group=root
+User=hp_deploy
+Group=hp_deploy
 EnvironmentFile=/etc/default/dclient
 RuntimeDirectory=dclient
 WorkingDirectory=/opt/deployment/client
