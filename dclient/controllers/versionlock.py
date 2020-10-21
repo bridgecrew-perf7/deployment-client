@@ -1,4 +1,4 @@
-from dclient.config import Config, get_logger
+from dclient.util.config import Config, get_logger
 
 import os
 import re
@@ -11,7 +11,7 @@ def post_versionlock(data):
     try:
         logger.info("Updating Versionlock")
         for pkg in data["versionlock"]:
-            logger.info(f"sudo yum versionlock add {pkg}")
+            logger.debug(f"sudo yum versionlock add {pkg}")
             stat = os.system(f"sudo yum versionlock add {pkg}")
             if stat != 0:
                 raise Exception(stat)
@@ -32,8 +32,8 @@ def post_versionlock(data):
 
 def get_versionlock():
     try:
-        logger.info("Getting Versionlock")
-        logger.info("check_output(['sudo', 'yum', 'versionlock', 'list'])")
+        logger.debug("Getting Versionlock")
+        logger.debug("check_output(['sudo', 'yum', 'versionlock', 'list'])")
         versionlock_list = []
         versionlock = check_output(["sudo", "yum", "versionlock", "list"])
         versionlock = versionlock.splitlines()
