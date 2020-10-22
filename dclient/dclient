@@ -1,8 +1,9 @@
 #!/usr/bin/python3
-from dclient.config import Config, set_state
+from dclient.util.config import Config
 from dclient.controllers.update import post_update
 from dclient.controllers.rollout import post_rollout
 from dclient.controllers.rollback import post_rollback
+from dclient.util.core import set_state, register_dclient
 from dclient.controllers.healthcheck import get_healthcheck
 from dclient.controllers.versionlock import post_versionlock, get_versionlock
 
@@ -31,7 +32,10 @@ def create_app():
     Create the dclient app
     :return: app
     """
-    set_state()
+    if not Config.TOKEN:
+        register_dclient()
+    else:
+        set_state("ACTIVE")
 
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -69,7 +73,7 @@ def create_app():
 if __name__ == "__main__":
     options = {
         "bind": "%s:%s" % ("0.0.0.0", "8003"),
-        "workers": 2,
+        "workers": 1,
         "reload-engine": "auto",
         "spew": False,
         "access-logformat": "%(h)s %(l)s %(u)s %(t)s '%(r)s' %(s)s %(b)s '%(f)s' '%(a)s'",

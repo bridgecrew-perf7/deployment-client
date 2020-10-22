@@ -1,5 +1,6 @@
-from dclient.config import Config
-from dclient.util import get_http, install_pkgs, restart_service
+from dclient.util.config import Config
+from dclient.util.http_helper import get_http
+from dclient.util.core import install_pkgs, restart_service
 
 import os
 from flask import request
@@ -11,7 +12,7 @@ def post_update():
         headers = {"Authorization": Config.TOKEN}
         payload = {"hostname": data["hostname"], "state": "UPDATING"}
         http = get_http()
-        http.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
+        http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
         for pkg in data["packages"]:
             os.system(f"sudo yum versionlock add {pkg}")
@@ -22,7 +23,7 @@ def post_update():
         headers = {"Authorization": Config.TOKEN}
         payload = {"hostname": data["hostname"], "state": "ERROR"}
         http = get_http()
-        http.patch(f"{Config.DEPLOYMENT_SERVER_URL}/server", headers=headers, json=payload)
+        http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
         response = {
             "hostname": Config.HOSTNAME,
             "status": "FAILED",
