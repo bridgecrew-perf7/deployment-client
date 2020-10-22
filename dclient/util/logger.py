@@ -2,9 +2,9 @@ import logging
 
 
 def get_logger():
-    logger = logging.getLogger("dproxy")
+    logger = logging.getLogger("dclient")
     logger.setLevel(logging.DEBUG)
-    fh = logging.FileHandler("/var/log/deployment/dproxy.log")
+    fh = logging.FileHandler("/var/log/deployment/dclient.log")
     fh.setLevel(logging.DEBUG)
     ch = logging.StreamHandler()
     ch.setLevel(logging.ERROR)
