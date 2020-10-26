@@ -2,12 +2,14 @@ from dclient.util.config import Config, get_logger
 
 import os
 import re
+from flask import request
 from subprocess import check_output
 
 logger = get_logger()
 
 
-def post_versionlock(data):
+def post_versionlock():
+    data = request.get_json()
     try:
         logger.info("Updating Versionlock")
         for pkg in data["versionlock"]:
