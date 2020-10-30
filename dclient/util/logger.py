@@ -13,6 +13,7 @@ def get_logger():
     )
     ch.setFormatter(formatter)
     fh.setFormatter(formatter)
+    logger.handlers.clear()
     logger.addHandler(ch)
     logger.addHandler(fh)
     return logger
