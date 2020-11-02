@@ -120,7 +120,6 @@ def register_dclient():
         "group": get_var("GROUP"),
         "environment": get_var("ENVIRONMENT"),
         "location": get_var("LOCATION"),
-        "url": get_var("URL"),
         "deployment_proxy": get_var("DEPLOYMENT_PROXY")
     }
     http = get_http()

@@ -54,7 +54,6 @@ class Config(object):
     LOCATION = get_var("LOCATION")
     ENVIRONMENT = get_var("ENVIRONMENT")
     GROUP = get_var("GROUP")
-    URL = get_var("URL")
     DEPLOYMENT_API_URI = get_var("DEPLOYMENT_API_URI")
     DEPLOYMENT_PROXY = get_var("DEPLOYMENT_PROXY")
     TOKEN = get_var("TOKEN")
