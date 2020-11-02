@@ -10,6 +10,19 @@ from dclient.controllers.versionlock import post_versionlock, get_versionlock
 from flask import Flask, request
 from gunicorn.app.wsgiapp import WSGIApplication
 
+import logging.handlers
+
+# These should be in .env / Config object.
+MAX_BYTES = 10000
+BACKUP_COUNT = 10
+
+formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s")
+
+rotating_log_handeler = logging.handlers.RotatingFileHandler(Config.LOG_FILE,maxBytes=MAX_BYTES,backupCount=BACKUP_COUNT)
+rotating_log_handeler.setFormatter(formatter)
+rotating_log_handeler.setLevel(logging.DEBUG)
+logging.getLogger('').addHandler(rotating_log_handeler)
+
 
 class DClient(WSGIApplication):
     def __init__(self, app, options=None):
