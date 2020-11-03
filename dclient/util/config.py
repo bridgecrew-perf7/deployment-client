@@ -1,11 +1,6 @@
-from dclient.util.logger import get_logger
-
 import os
 from dotenv import load_dotenv
 from collections import OrderedDict
-
-logger = get_logger()
-
 
 class LastUpdated(OrderedDict):
     def __setitem__(self, key, value):
