@@ -16,7 +16,7 @@ def post_rollback():
     payload = {"hostname": data["hostname"], "state": "UPDATING"}
     http = get_http()
     http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
-    
+
     try:
         os.system(f"yum -y history rollback {data['yum_rollback_id']}")
         for pkg in data["versionlock"]:
@@ -30,10 +30,19 @@ def post_rollback():
         if stat != 0:
             raise Exception(stat)
 
-        payload = {"deployment_id": data["deployment_id"], "action": "Update", "state": "SUCCESS",
-                   "yum_transaction_id": yum_transaction_id, "yum_rollback_id": yum_rollback_id}
+        payload = {
+            "deployment_id": data["deployment_id"],
+            "action": "Update",
+            "state": "SUCCESS",
+            "yum_transaction_id": yum_transaction_id,
+            "yum_rollback_id": yum_rollback_id,
+        }
         http = get_http()
-        http.post(f"{Config.DEPLOYMENT_API_URI}/server/history/{data['hostname']}", headers=headers, json=payload)
+        http.post(
+            f"{Config.DEPLOYMENT_API_URI}/server/history/{data['hostname']}",
+            headers=headers,
+            json=payload,
+        )
 
         payload = {"hostname": data["hostname"], "state": "ACTIVE"}
         http = get_http()
@@ -51,20 +60,27 @@ def post_rollback():
         payload = {"hostname": data["hostname"], "state": "ERROR"}
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
-        
+
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
-        
-        payload = {"deployment_id": data["deployment_id"], "action": "Update", "state": "FAILED",
-                   "yum_transaction_id": yum_transaction_id, "yum_rollback_id": yum_rollback_id}
+
+        payload = {
+            "deployment_id": data["deployment_id"],
+            "action": "Update",
+            "state": "FAILED",
+            "yum_transaction_id": yum_transaction_id,
+            "yum_rollback_id": yum_rollback_id,
+        }
         http = get_http()
-        http.post(f"{Config.DEPLOYMENT_API_URI}/server/history/{data['hostname']}", json=payload)
-        
+        http.post(
+            f"{Config.DEPLOYMENT_API_URI}/server/history/{data['hostname']}",
+            json=payload,
+        )
+
         response = {
             "hostname": Config.HOSTNAME,
             "status": "FAILED",
             "message": "Deployment rollback failed.",
-            "exception": str(e)
+            "exception": str(e),
         }
         return response, 409
-

@@ -28,6 +28,6 @@ def post_update():
             "hostname": Config.HOSTNAME,
             "status": "FAILED",
             "message": "POST update failed.",
-            "exception": str(e)
+            "exception": str(e),
         }
         return response, 409

@@ -13,7 +13,6 @@ logger = get_logger()
 
 
 class LastUpdated(OrderedDict):
-
     def __setitem__(self, key, value):
         super().__setitem__(key, value)
         self.move_to_end(key)
@@ -36,7 +35,7 @@ def get_yum_transaction_id():
     count = 0
     fl = 0
     for line in history_list:
-        line = str(line, 'utf-8')
+        line = str(line, "utf-8")
         z = re.match("^-+$", line)
         if z:
             fl = count + 1
@@ -44,7 +43,7 @@ def get_yum_transaction_id():
         else:
             count += 1
     first = history_list[fl]
-    first = str(first, 'utf-8')
+    first = str(first, "utf-8")
     first = first.split("|")
     tid = first[0]
     tid = int(tid)
@@ -52,7 +51,7 @@ def get_yum_transaction_id():
 
 
 def install_pkgs(packages):
-    packages = ' '.join(map(str, packages))
+    packages = " ".join(map(str, packages))
     logger.info("running os.system('sudo yum clean all')")
     os.system("sudo yum clean all")
     logger.info(f"running sudo yum --enablerepo=Production -y install {packages}")
@@ -87,7 +86,7 @@ def update_env(key, value):
             if "\n" in line:
                 f.write(line)
             else:
-                f.write(line+"\n")
+                f.write(line + "\n")
 
 
 def set_state(state):
@@ -121,7 +120,7 @@ def register_dclient():
         "environment": get_var("ENVIRONMENT"),
         "location": get_var("LOCATION"),
         "url": get_var("URL"),
-        "deployment_proxy": get_var("DEPLOYMENT_PROXY")
+        "deployment_proxy": get_var("DEPLOYMENT_PROXY"),
     }
     http = get_http()
     r = http.post(f"{Config.DEPLOYMENT_API_URI}/register", json=data)

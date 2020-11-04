@@ -57,6 +57,6 @@ def get_versionlock():
         response = {
             "hostname": Config.HOSTNAME,
             "status": "FAILED",
-            "message": "Failed to GET versionlock list"
+            "message": "Failed to GET versionlock list",
         }
         return response, 409
