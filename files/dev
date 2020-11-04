@@ -7,3 +7,6 @@ LOCATION=PROVO
 URL=http://www0.hp.provo1.endurancemb.com:8003
 DEPLOYMENT_PROXY=deploy-proxy.hp.provo1.endurancemb.com
 DEPLOYMENT_SERVER_URL=http://deploy-proxy.hp.provo1.endurancemb.com:8002/api/1.0.0
+LOG_FILE=./deployment-client.log
+LOG_MAX_BYTES=10000
+LOG_BACKUP_COUNT=10
