@@ -10,7 +10,7 @@ def post_update():
     data = request.get_json()
     try:
         headers = {"Authorization": Config.TOKEN}
-        payload = {"hostname": data["hostname"], "state": "UPDATING"}
+        payload = {"hostname": data["hostname"], "port": data["port"], "api_version": data["api_version"], "state": "UPDATING"}
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
@@ -21,11 +21,13 @@ def post_update():
         restart_service("dclient.service")
     except Exception as e:
         headers = {"Authorization": Config.TOKEN}
-        payload = {"hostname": data["hostname"], "state": "ERROR"}
+        payload = {"hostname": data["hostname"], "port": data["port"], "api_version": data["api_version"], "state": "ERROR"}
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
         response = {
             "hostname": Config.HOSTNAME,
+            "port": Config.PORT,
+            "api_version": Config.API_VERSION,
             "status": "FAILED",
             "message": "POST update failed.",
             "exception": str(e),

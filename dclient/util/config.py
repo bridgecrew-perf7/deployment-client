@@ -55,6 +55,8 @@ def get_var(var):
 
 class Config(object):
     HOSTNAME = get_var("HOSTNAME")
+    PORT = get_var("PORT")
+    API_VERSION = get_var("API_VERSION")
     IP = get_var("IP")
     STATE = get_var("STATE")
     LOCATION = get_var("LOCATION")

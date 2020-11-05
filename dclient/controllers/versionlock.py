@@ -16,6 +16,8 @@ def post_versionlock():
                 raise Exception(stat)
         response = {
             "hostname": Config.HOSTNAME,
+            "port": Config.PORT,
+            "api_version": Config.API_VERSION,
             "status": "SUCCESS",
             "message": "New versionlock list successfully created.",
         }
@@ -23,6 +25,8 @@ def post_versionlock():
     except:
         response = {
             "hostname": Config.HOSTNAME,
+            "port": Config.PORT,
+            "api_version": Config.API_VERSION,
             "status": "FAILED",
             "message": "POST versionlock list failed.",
         }
@@ -45,6 +49,8 @@ def get_versionlock():
                 versionlock_list.append(vl)
         response = {
             "hostname": Config.HOSTNAME,
+            "port": Config.PORT,
+            "api_version": Config.API_VERSION,
             "status": "SUCCESS",
             "message": "Versionlock list successfully retrieved",
             "versionlock": versionlock_list,
@@ -53,6 +59,8 @@ def get_versionlock():
     except:
         response = {
             "hostname": Config.HOSTNAME,
+            "port": Config.PORT,
+            "api_version": Config.API_VERSION,
             "status": "FAILED",
             "message": "Failed to GET versionlock list",
         }
