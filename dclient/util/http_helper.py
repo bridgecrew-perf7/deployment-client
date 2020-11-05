@@ -1,12 +1,8 @@
 from dclient.util.config import Config
-from dclient.util.logger import get_logger
 
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
-
-logger = get_logger()
-
 
 class TimeoutHTTPAdapter(HTTPAdapter):
     def __init__(self, *args, **kwargs):

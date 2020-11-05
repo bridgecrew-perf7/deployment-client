@@ -1,17 +1,14 @@
 from dclient.util.config import Config
-from dclient.util.logger import get_logger
+from flask import current_app as app
 from dclient.util.http_helper import get_http
 from dclient.util.core import get_yum_transaction_id, restart_service
 
 import os
 from flask import request
 
-logger = get_logger()
-
-
 def post_rollback():
     data = request.get_json()
-    logger.info(data)
+    app.logger.info(data)
     headers = {"Authorization": Config.TOKEN}
     payload = {"hostname": data["hostname"], "state": "UPDATING"}
     http = get_http()
