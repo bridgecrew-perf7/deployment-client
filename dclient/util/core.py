@@ -1,14 +1,15 @@
 from dclient.util.config import Config, get_var
 from dclient.util.http_helper import get_http
-
+import logging
 import os
 import re
 from dotenv import load_dotenv
 from collections import OrderedDict
 from subprocess import Popen, check_output
-from flask import current_app as app
 
 load_dotenv("/etc/default/dclient")
+
+logger = logging.getLogger("Register")
 
 class LastUpdated(OrderedDict):
     def __setitem__(self, key, value):
@@ -17,7 +18,7 @@ class LastUpdated(OrderedDict):
 
 
 def get_installed(rpm):
-    app.logger.info(f"running check_output(['rpm', '-q', {rpm}])")
+    logger.info(f"running check_output(['rpm', '-q', {rpm}])")
     package = check_output(["rpm", "-q", rpm])
     z = re.match("not installed", package)
     if z:
@@ -27,7 +28,7 @@ def get_installed(rpm):
 
 
 def get_yum_transaction_id():
-    app.logger.info("running check_output(['sudo', 'yum', 'history', 'list''])")
+    logger.info("running check_output(['sudo', 'yum', 'history', 'list''])")
     history_list = check_output(["sudo", "yum", "history", "list"])
     history_list = history_list.splitlines()
     count = 0
@@ -50,16 +51,16 @@ def get_yum_transaction_id():
 
 def install_pkgs(packages):
     packages = " ".join(map(str, packages))
-    app.logger.info("running os.system('sudo yum clean all')")
+    logger.info("running os.system('sudo yum clean all')")
     os.system("sudo yum clean all")
-    app.logger.info(f"running sudo yum --enablerepo=Production -y install {packages}")
+    logger.info(f"running sudo yum --enablerepo=Production -y install {packages}")
     stat = os.system(f"sudo yum --enablerepo=Production -y install {packages}")
     if stat != 0:
         raise Exception(stat)
 
 
 def restart_service(service):
-    app.logger.info(f"running Popen(['sudo', 'systemctl', 'restart', {service}])")
+    logger.info(f"running Popen(['sudo', 'systemctl', 'restart', {service}])")
     Popen(["sudo", "systemctl", "restart", service])
 
 
@@ -97,10 +98,10 @@ def set_state(state):
     http = get_http()
     r = http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=data)
     if r.status_code == 201:
-        app.logger.debug(f"Successfully Updated State: {state}")
+        logger.debug(f"Successfully Updated State: {state}")
         return True
     else:
-        app.logger.error(f"Failed to set state: {state}")
+        logger.error(f"Failed to set state: {state}")
         return False
 
 
@@ -109,6 +110,7 @@ def register_dclient():
     Register dclient and fetch token
     :return:
     """
+
     data = {
         "created_by": "dclient",
         "hostname": get_var("HOSTNAME"),
@@ -123,7 +125,7 @@ def register_dclient():
     http = get_http()
     r = http.post(f"{Config.DEPLOYMENT_API_URI}/register", json=data)
     resp = r.json()
-    app.logger.debug(f"REGISTER CLIENT: {resp}")
+    logger.debug(f"REGISTER CLIENT: {resp}")
     if "token" in resp:
         update_env("TOKEN", resp["token"])
         set_state("ACTIVE")
