@@ -1,12 +1,8 @@
 from dclient.util.config import Config
-from dclient.util.logger import get_logger
 
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
-
-logger = get_logger()
-
 
 class TimeoutHTTPAdapter(HTTPAdapter):
     def __init__(self, *args, **kwargs):
@@ -28,10 +24,9 @@ def get_http():
         total=int(Config.RETRY),
         backoff_factor=int(Config.BACKOFF_FACTOR),
         status_forcelist=list(Config.STATUS_FORCELIST),
-        method_whitelist=list(Config.METHOD_WHITELIST)
+        method_whitelist=list(Config.METHOD_WHITELIST),
     )
     http = requests.Session()
     http.mount("https://", TimeoutHTTPAdapter(max_retries=retry_strategy))
     http.mount("http://", TimeoutHTTPAdapter(max_retries=retry_strategy))
     return http
-

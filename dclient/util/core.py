@@ -1,7 +1,6 @@
-from dclient.util.logger import get_logger
 from dclient.util.config import Config, get_var
 from dclient.util.http_helper import get_http
-
+import logging
 import os
 import re
 from dotenv import load_dotenv
@@ -9,11 +8,10 @@ from collections import OrderedDict
 from subprocess import Popen, check_output
 
 load_dotenv("/etc/default/dclient")
-logger = get_logger()
 
+logger = logging.getLogger("Register")
 
 class LastUpdated(OrderedDict):
-
     def __setitem__(self, key, value):
         super().__setitem__(key, value)
         self.move_to_end(key)
@@ -36,7 +34,7 @@ def get_yum_transaction_id():
     count = 0
     fl = 0
     for line in history_list:
-        line = str(line, 'utf-8')
+        line = str(line, "utf-8")
         z = re.match("^-+$", line)
         if z:
             fl = count + 1
@@ -44,7 +42,7 @@ def get_yum_transaction_id():
         else:
             count += 1
     first = history_list[fl]
-    first = str(first, 'utf-8')
+    first = str(first, "utf-8")
     first = first.split("|")
     tid = first[0]
     tid = int(tid)
@@ -52,7 +50,7 @@ def get_yum_transaction_id():
 
 
 def install_pkgs(packages):
-    packages = ' '.join(map(str, packages))
+    packages = " ".join(map(str, packages))
     logger.info("running os.system('sudo yum clean all')")
     os.system("sudo yum clean all")
     logger.info(f"running sudo yum --enablerepo=Production -y install {packages}")
@@ -87,7 +85,7 @@ def update_env(key, value):
             if "\n" in line:
                 f.write(line)
             else:
-                f.write(line+"\n")
+                f.write(line + "\n")
 
 
 def set_state(state):
@@ -112,6 +110,7 @@ def register_dclient():
     Register dclient and fetch token
     :return:
     """
+
     data = {
         "created_by": "dclient",
         "hostname": get_var("HOSTNAME"),

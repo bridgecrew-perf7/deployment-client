@@ -1,19 +1,16 @@
-from dclient.util.config import Config, get_logger
-
+from dclient.util.config import Config
+from flask import current_app as app
 import os
 import re
 from flask import request
 from subprocess import check_output
 
-logger = get_logger()
-
-
 def post_versionlock():
     data = request.get_json()
     try:
-        logger.info("Updating Versionlock")
+        app.logger.info("Updating Versionlock")
         for pkg in data["versionlock"]:
-            logger.debug(f"sudo yum versionlock add {pkg}")
+            app.logger.debug(f"sudo yum versionlock add {pkg}")
             stat = os.system(f"sudo yum versionlock add {pkg}")
             if stat != 0:
                 raise Exception(stat)
@@ -34,8 +31,8 @@ def post_versionlock():
 
 def get_versionlock():
     try:
-        logger.debug("Getting Versionlock")
-        logger.debug("check_output(['sudo', 'yum', 'versionlock', 'list'])")
+        app.logger.debug("Getting Versionlock")
+        app.logger.debug("check_output(['sudo', 'yum', 'versionlock', 'list'])")
         versionlock_list = []
         versionlock = check_output(["sudo", "yum", "versionlock", "list"])
         versionlock = versionlock.splitlines()
@@ -57,6 +54,6 @@ def get_versionlock():
         response = {
             "hostname": Config.HOSTNAME,
             "status": "FAILED",
-            "message": "Failed to GET versionlock list"
+            "message": "Failed to GET versionlock list",
         }
         return response, 409

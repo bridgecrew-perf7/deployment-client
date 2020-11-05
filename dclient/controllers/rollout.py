@@ -2,7 +2,12 @@ import os
 from flask import request
 from dclient.util.config import Config
 from dclient.util.http_helper import get_http
-from dclient.util.core import get_yum_transaction_id, install_pkgs, restart_service, get_installed
+from dclient.util.core import (
+    get_yum_transaction_id,
+    install_pkgs,
+    restart_service,
+    get_installed,
+)
 
 
 def post_rollout():
@@ -34,16 +39,25 @@ def post_rollout():
         if stat != 0:
             raise Exception(stat)
 
-        payload = {"deployment_id": int(data["deployment_id"]), "action": "Update", "state": "SUCCESS",
-                   "output": "deployment was successful", "yum_transaction_id": yum_transaction_id,
-                   "yum_rollback_id": yum_rollback_id}
+        payload = {
+            "deployment_id": int(data["deployment_id"]),
+            "action": "Update",
+            "state": "SUCCESS",
+            "output": "deployment was successful",
+            "yum_transaction_id": yum_transaction_id,
+            "yum_rollback_id": yum_rollback_id,
+        }
         http = get_http()
-        http.post(f"{Config.DEPLOYMENT_API_URI}/server/history/{data['hostname']}", headers=headers, json=payload)
+        http.post(
+            f"{Config.DEPLOYMENT_API_URI}/server/history/{data['hostname']}",
+            headers=headers,
+            json=payload,
+        )
 
         payload = {"hostname": data["hostname"], "state": "ACTIVE"}
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
-        
+
         response = {
             "hostname": Config.HOSTNAME,
             "status": "SUCCESS",
@@ -54,19 +68,27 @@ def post_rollout():
         payload = {"hostname": data["hostname"], "state": "ERROR"}
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
-        
+
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
-        payload = {"deployment_id": int(data["deployment_id"]), "action": "Update", "state": "FAILED",
-                   "yum_transaction_id": yum_transaction_id, "yum_rollback_id": yum_rollback_id}
+        payload = {
+            "deployment_id": int(data["deployment_id"]),
+            "action": "Update",
+            "state": "FAILED",
+            "yum_transaction_id": yum_transaction_id,
+            "yum_rollback_id": yum_rollback_id,
+        }
         http = get_http()
-        http.post(f"{Config.DEPLOYMENT_API_URI}/server/history/{data['hostname']}", headers=headers, json=payload)
-        
+        http.post(
+            f"{Config.DEPLOYMENT_API_URI}/server/history/{data['hostname']}",
+            headers=headers,
+            json=payload,
+        )
+
         response = {
             "hostname": Config.HOSTNAME,
             "status": "FAILED",
             "message": "POST rollout failed.",
-            "exception": str(e)
+            "exception": str(e),
         }
         return response, 409
-
