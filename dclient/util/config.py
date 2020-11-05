@@ -1,5 +1,3 @@
-from dclient.util.logger import get_logger
-
 import os
 from dotenv import load_dotenv
 from collections import OrderedDict
@@ -72,3 +70,6 @@ class Config(object):
     STATUS_FORCELIST = get_var("STATUS_FORCELIST")
     METHOD_WHITELIST = get_var("METHOD_WHITELIST")
     DEFAULT_TIMEOUT = get_var("DEFAULT_TIMEOUT")
+    LOG_FILE = get_var("LOG_FILE")
+    LOG_MAX_BYTES = get_var("LOG_MAX_BYTES")
+    LOG_BACKUP_COUNT = get_var("LOG_BACKUP_COUNT")

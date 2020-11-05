@@ -1,7 +1,6 @@
-from dclient.util.logger import get_logger
 from dclient.util.config import Config, get_var
 from dclient.util.http_helper import get_http
-
+import logging
 import os
 import re
 from dotenv import load_dotenv
@@ -9,8 +8,8 @@ from collections import OrderedDict
 from subprocess import Popen, check_output
 
 load_dotenv("/etc/default/dclient")
-logger = get_logger()
 
+logger = logging.getLogger("Register")
 
 class LastUpdated(OrderedDict):
     def __setitem__(self, key, value):
@@ -111,6 +110,7 @@ def register_dclient():
     Register dclient and fetch token
     :return:
     """
+
     data = {
         "created_by": "dclient",
         "hostname": get_var("HOSTNAME"),
