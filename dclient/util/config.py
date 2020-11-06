@@ -64,7 +64,9 @@ class Config(object):
     GROUP = get_var("GROUP")
     DEPLOYMENT_PROXY = get_var("DEPLOYMENT_PROXY")
     PROXY_PORT = get_var("PROXY_PORT")
-    DEPLOYMENT_API_URI = "http://"+DEPLOYMENT_PROXY+":"+PROXY_PORT+"/api/"+API_VERSION
+    DEPLOYMENT_API_URI = (
+        "http://" + DEPLOYMENT_PROXY + ":" + PROXY_PORT + "/api/" + API_VERSION
+    )
     TOKEN = get_var("TOKEN")
     ENV_FILE = get_var("ENV_FILE")
     RETRY = get_var("RETRY")

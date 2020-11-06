@@ -6,11 +6,17 @@ from dclient.util.core import get_yum_transaction_id, restart_service
 import os
 from flask import request
 
+
 def post_rollback():
     data = request.get_json()
     app.logger.info(data)
     headers = {"Authorization": Config.TOKEN}
-    payload = {"hostname": data["hostname"], "port": data["port"], "api_version": data["api_version"], "state": "UPDATING"}
+    payload = {
+        "hostname": data["hostname"],
+        "port": data["port"],
+        "api_version": data["api_version"],
+        "state": "UPDATING",
+    }
     http = get_http()
     http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
@@ -41,7 +47,12 @@ def post_rollback():
             json=payload,
         )
 
-        payload = {"hostname": data["hostname"], "port": data["port"], "api_version": data["api_version"], "state": "ACTIVE"}
+        payload = {
+            "hostname": data["hostname"],
+            "port": data["port"],
+            "api_version": data["api_version"],
+            "state": "ACTIVE",
+        }
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
@@ -56,7 +67,12 @@ def post_rollback():
         }
         return response, 201
     except Exception as e:
-        payload = {"hostname": data["hostname"], "port": data["port"], "api_version": data["api_version"], "state": "ERROR"}
+        payload = {
+            "hostname": data["hostname"],
+            "port": data["port"],
+            "api_version": data["api_version"],
+            "state": "ERROR",
+        }
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 

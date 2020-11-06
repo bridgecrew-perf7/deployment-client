@@ -21,12 +21,7 @@ setup(
         "License :: OSI Approved :: Apache 2.0",
         "Operating System :: OS Independent",
     ],
-    install_requires=[
-        "python-dotenv",
-        "requests",
-        "flask",
-        "gunicorn"
-    ],
+    install_requires=["python-dotenv", "requests", "flask", "gunicorn"],
     scripts=["dclient/dclient"],
-    python_requires=">=3.6"
+    python_requires=">=3.6",
 )

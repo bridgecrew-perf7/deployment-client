@@ -5,6 +5,7 @@ import re
 from flask import request
 from subprocess import check_output
 
+
 def post_versionlock():
     data = request.get_json()
     try:
