@@ -1,12 +1,15 @@
 from dclient.util.config import Config
-from flask import current_app as app
+
 import os
 import re
 from flask import request
 from subprocess import check_output
+from flask import current_app as app
+
 
 def post_versionlock():
     data = request.get_json()
+    app.logger.debug(f"POST VERSIONLOCK: {data}")
     try:
         app.logger.info("Updating Versionlock")
         for pkg in data["versionlock"]:
@@ -19,6 +22,7 @@ def post_versionlock():
             "status": "SUCCESS",
             "message": "New versionlock list successfully created.",
         }
+        app.logger.debug(response)
         return response, 201
     except:
         response = {
@@ -26,6 +30,7 @@ def post_versionlock():
             "status": "FAILED",
             "message": "POST versionlock list failed.",
         }
+        app.logger.debug(response)
         return response, 409
 
 
@@ -49,6 +54,7 @@ def get_versionlock():
             "message": "Versionlock list successfully retrieved",
             "versionlock": versionlock_list,
         }
+        app.logger.debug(response)
         return response, 200
     except:
         response = {
@@ -56,4 +62,5 @@ def get_versionlock():
             "status": "FAILED",
             "message": "Failed to GET versionlock list",
         }
+        app.logger.debug(response)
         return response, 409

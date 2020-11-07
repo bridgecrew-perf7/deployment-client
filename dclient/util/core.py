@@ -1,15 +1,15 @@
 from dclient.util.config import Config, get_var
 from dclient.util.http_helper import get_http
-import logging
+
 import os
 import re
 from dotenv import load_dotenv
 from collections import OrderedDict
+from flask import current_app as app
 from subprocess import Popen, check_output
 
 load_dotenv("/etc/default/dclient")
 
-logger = logging.getLogger("Register")
 
 class LastUpdated(OrderedDict):
     def __setitem__(self, key, value):
@@ -18,7 +18,7 @@ class LastUpdated(OrderedDict):
 
 
 def get_installed(rpm):
-    logger.info(f"running check_output(['rpm', '-q', {rpm}])")
+    app.logger.info(f"running check_output(['rpm', '-q', {rpm}])")
     package = check_output(["rpm", "-q", rpm])
     z = re.match("not installed", package)
     if z:
@@ -28,7 +28,7 @@ def get_installed(rpm):
 
 
 def get_yum_transaction_id():
-    logger.info("running check_output(['sudo', 'yum', 'history', 'list''])")
+    app.logger.info("running check_output(['sudo', 'yum', 'history', 'list''])")
     history_list = check_output(["sudo", "yum", "history", "list"])
     history_list = history_list.splitlines()
     count = 0
@@ -51,26 +51,28 @@ def get_yum_transaction_id():
 
 def install_pkgs(packages):
     packages = " ".join(map(str, packages))
-    logger.info("running os.system('sudo yum clean all')")
+    app.logger.info("running os.system('sudo yum clean all')")
     os.system("sudo yum clean all")
-    logger.info(f"running sudo yum --enablerepo=Production -y install {packages}")
+    app.logger.info(f"running sudo yum --enablerepo=Production -y install {packages}")
     stat = os.system(f"sudo yum --enablerepo=Production -y install {packages}")
     if stat != 0:
         raise Exception(stat)
 
 
 def restart_service(service):
-    logger.info(f"running Popen(['sudo', 'systemctl', 'restart', {service}])")
+    app.logger.info(f"running Popen(['sudo', 'systemctl', 'restart', {service}])")
     Popen(["sudo", "systemctl", "restart", service])
 
 
 def update_env(key, value):
-    """
-    Update environment variables and store environment file
+    """ Update environment variables and store environment file
     :param key:
+    :type: str
     :param value:
+    :type: str
     :return:
     """
+
     env = LastUpdated()
     with open("/etc/default/dclient") as f:
         for line in f:
@@ -89,25 +91,24 @@ def update_env(key, value):
 
 
 def set_state(state):
-    """
-    Set the dclient state to the correct state.
+    """ Set the dclient state to the correct state.
     Keep the state in sync with Deployment-api
     :return:
     """
+
     data = {"hostname": get_var("HOSTNAME"), "state": state}
     http = get_http()
     r = http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=data)
     if r.status_code == 201:
-        logger.debug(f"Successfully Updated State: {state}")
+        app.logger.debug(f"Successfully Updated State: {state}")
         return True
     else:
-        logger.error(f"Failed to set state: {state}")
+        app.logger.error(f"Failed to set state: {state}")
         return False
 
 
 def register_dclient():
-    """
-    Register dclient and fetch token
+    """ Register dclient and fetch token
     :return:
     """
 
@@ -125,7 +126,9 @@ def register_dclient():
     http = get_http()
     r = http.post(f"{Config.DEPLOYMENT_API_URI}/register", json=data)
     resp = r.json()
-    logger.debug(f"REGISTER CLIENT: {resp}")
+    app.logger.debug(f"REGISTER CLIENT: {resp}")
+    if "server" in resp:
+        update_env("SERVER_ID", resp["server"]["id"])
     if "token" in resp:
         update_env("TOKEN", resp["token"])
         set_state("ACTIVE")

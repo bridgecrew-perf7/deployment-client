@@ -54,6 +54,7 @@ def get_var(var):
 
 
 class Config(object):
+    SERVER_ID = get_var("SERVER_ID")
     HOSTNAME = get_var("HOSTNAME")
     IP = get_var("IP")
     STATE = get_var("STATE")

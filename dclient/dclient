@@ -38,8 +38,7 @@ class DClient(WSGIApplication):
 
 
 def create_app():
-    """
-    Create the dclient app
+    """ Create the dclient app
     :return: app
     """
     if not Config.TOKEN:
