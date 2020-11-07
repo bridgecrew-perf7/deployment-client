@@ -98,7 +98,6 @@ METHOD_WHITELIST=["HEAD", "GET", "OPTIONS", "TRACE", "DELETE", "PUT", "PATCH", "
 # default timeout in seconds
 DEFAULT_TIMEOUT=3
 
-
 20  systemctl enable dclient
 21  systemctl status dclient
 22  systemctl start dclient
