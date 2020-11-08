@@ -41,15 +41,16 @@ def create_app():
     """ Create the dclient app
     :return: app
     """
-    if not Config.TOKEN:
-        register_dclient()
-    else:
-        set_state("ACTIVE")
 
     app = Flask(__name__)
     app.config.from_object(Config)
 
     with app.app_context():
+        if not Config.TOKEN:
+            register_dclient()
+        else:
+            set_state("ACTIVE")
+
         @app.route("/", methods=["GET"])
         def healthcheck():
             if request.method == "GET":
