@@ -65,45 +65,57 @@ def restart_service(service):
 
 
 def update_env(key, value):
-    """Update environment variables and store environment file
-    :param key:
-    :type: str
-    :param value:
-    :type: str
-    :return:
     """
+    Set a key value pair in the environment file and export to the os
+    :param: key string
+    :param: value string
+    :return: True or False
+    """
+    try:
+        os.environ[key] = value
+        env = LastUpdated()
+        with open(Config.ENV_FILE) as f:
+            for line in f:
+                try:
+                    (k, v) = line.split("=", 1)
+                    env[k] = v
+                except:
+                    pass
+        env[key] = value
 
-    env = LastUpdated()
-    with open("/etc/default/dclient") as f:
-        for line in f:
-            (k, v) = line.split("=", 1)
-            env[k] = v
-    env[key] = value
-    os.environ[key] = value
-
-    with open("/etc/default/dclient", "w") as f:
-        for k in env.keys():
-            line = f"{k}={env[k]}"
-            if "\n" in line:
-                f.write(line)
-            else:
-                f.write(line + "\n")
+        with open(Config.ENV_FILE, "w") as f:
+            for k in env.keys():
+                line = f"{k}={env[k]}"
+                if "\n" in line:
+                    f.write(line)
+                else:
+                    f.write(line + "\n")
+        return True
+    except Exception as e:
+        app.logger.error(f"Update Environment Failed: {e}")
+        return False
 
 
 def set_state(state):
-    """Set the dclient state to the correct state.
-    Keep the state in sync with Deployment-api
-    :return:
     """
-
-    data = {"hostname": get_var("HOSTNAME"), "state": state}
-    http = get_http()
-    r = http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=data)
-    if r.status_code == 201:
-        app.logger.debug(f"Successfully Updated State: {state}")
+    Set the dclient state in the environment and the deployment-api to the correct state.
+    :param: state enum[NEW ACTIVE UPDATING ERROR DISABLED]
+    :return: True or False
+    """
+    try:
+        data = {"hostname": get_var("HOSTNAME"), "state": state}
+        http = get_http()
+        r = http.patch(
+            f"{Config.DEPLOYMENT_API_URI}/server",
+            json=data,
+        )
+        resp = r.json()
+        app.logger.debug(f"Updated Proxy: {resp} {r.status_code}")
+        update_env("STATE", state)
+        os.environ["STATE"] = state
         return True
-    else:
-        app.logger.error(f"Failed to set state: {state}")
+    except Exception as e:
+        app.logger.error(f"SET STATE FAILED: {e}")
         return False
 
 
