@@ -12,7 +12,7 @@ from dclient.util.core import (
 
 
 def post_rollout():
-    """ Post Rollout Operation
+    """Post Rollout Operation
 
     post data:
         buildall: whether to run buildall with this operation or not

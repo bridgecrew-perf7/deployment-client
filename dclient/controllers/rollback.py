@@ -1,14 +1,14 @@
 from dclient.util.config import Config
-from flask import current_app as app
 from dclient.util.http_helper import get_http
 from dclient.util.core import get_yum_transaction_id, restart_service
 
 import os
 from flask import request
+from flask import current_app as app
 
 
 def post_rollback():
-    """ Post Rollback Operation
+    """Post Rollback Operation
 
     post data
         buildall:

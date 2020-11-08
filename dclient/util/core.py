@@ -65,7 +65,7 @@ def restart_service(service):
 
 
 def update_env(key, value):
-    """ Update environment variables and store environment file
+    """Update environment variables and store environment file
     :param key:
     :type: str
     :param value:
@@ -91,7 +91,7 @@ def update_env(key, value):
 
 
 def set_state(state):
-    """ Set the dclient state to the correct state.
+    """Set the dclient state to the correct state.
     Keep the state in sync with Deployment-api
     :return:
     """
@@ -108,7 +108,7 @@ def set_state(state):
 
 
 def register_dclient():
-    """ Register dclient and fetch token
+    """Register dclient and fetch token
     :return:
     """
 

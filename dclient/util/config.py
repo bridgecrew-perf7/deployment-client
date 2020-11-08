@@ -31,6 +31,7 @@ def get_config():
             for line in cfg:
                 try:
                     (k, v) = line.split("=", 1)
+                    v = v.rstrip("/n")
                     config[k] = v
                 except:
                     pass
@@ -62,8 +63,11 @@ class Config(object):
     ENVIRONMENT = get_var("ENVIRONMENT")
     GROUP = get_var("GROUP")
     URL = get_var("URL")
-    DEPLOYMENT_API_URI = get_var("DEPLOYMENT_API_URI")
     DEPLOYMENT_PROXY = get_var("DEPLOYMENT_PROXY")
+    DEPLOYMENT_PROXY_PROTOCOL = get_var("DEPLOYMENT_PROXY_PROTOCOL")
+    DEPLOYMENT_PROXY_PORT = get_var("DEPLOYMENT_PROXY_PORT")
+    DEPLOYMENT_PROXY_VERSION = get_var("DEPLOYMENT_PROXY_VERSION")
+    DEPLOYMENT_API_URI = f"{DEPLOYMENT_PROXY_PROTOCOL}://{DEPLOYMENT_PROXY}:{DEPLOYMENT_PROXY_PORT}/api/{DEPLOYMENT_PROXY_VERSION}"
     TOKEN = get_var("TOKEN")
     ENV_FILE = get_var("ENV_FILE")
     RETRY = get_var("RETRY")
@@ -71,6 +75,7 @@ class Config(object):
     STATUS_FORCELIST = get_var("STATUS_FORCELIST")
     METHOD_WHITELIST = get_var("METHOD_WHITELIST")
     DEFAULT_TIMEOUT = get_var("DEFAULT_TIMEOUT")
+    LOG_LEVEL = get_var("LOG_LEVEL")
     LOG_FILE = get_var("LOG_FILE")
     LOG_MAX_BYTES = get_var("LOG_MAX_BYTES")
     LOG_BACKUP_COUNT = get_var("LOG_BACKUP_COUNT")
