@@ -98,7 +98,7 @@ STATUS_FORCELIST=[429, 500, 502, 503, 504]
 # the http methods to retry
 METHOD_WHITELIST=["HEAD", "GET", "OPTIONS", "TRACE", "DELETE", "PUT", "PATCH", "POST"]
 # default timeout in seconds
-DEFAULT_TIMEOUT=30
+DEFAULT_TIMEOUT=3
 # default log file name
 LOG_FILE=/var/log/deployment/dclient.log
 # max file size before roll
