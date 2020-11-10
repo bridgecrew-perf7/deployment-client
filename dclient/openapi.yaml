@@ -13,19 +13,6 @@ servers:
     description: Bluehost Deployment Client
 paths:
   /:
-    post:
-      summary: create a healthcheck
-      operationId: dclient.controllers.healthcheck.post_healthcheck
-      requestBody:
-        description: Create HealthCheck object
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/HealthCheck'
-        required: true
-      responses:
-        default:
-          description: successful operation
     get:
       summary: get healthcheck
       operationId: dclient.controllers.healthcheck.get_healthcheck

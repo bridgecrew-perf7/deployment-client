@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="dclient",
-    version="0.1.76",
+    version="0.1.77",
     author="Jacob Bushman",
     author_email="jacob.matthew.bushman@endurance.com",
     description="Deployment Client API",
@@ -25,7 +25,8 @@ setup(
         "python-dotenv",
         "requests",
         "flask",
-        "gunicorn"
+        "gunicorn",
+	"connexion"
     ],
     python_requires=">=3.6"
 )
