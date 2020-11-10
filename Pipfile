@@ -1,18 +1,17 @@
 [[source]]
 name = "pypi"
-url = "https://pypi.org/simple"
+url = "https://pypi.unifiedlayer.com/root/stable/+simple/"
 verify_ssl = true
 
 [dev-packages]
+pytest = "==5.4.3"
 
 [packages]
-python-dotenv = "*"
-requests = "*"
-flask = "*"
-gunicorn = "*"
-dclient = {editable = true, path = "."}
-certifi = "*"
-devpi-client = "*"
+connexion = "==2.7.0"
+flask = "==1.1.2"
+gunicorn = "==20.0.4"
+python-dotenv = "==0.15.0"
+requests = "==2.24.0"
 
 [requires]
 python_version = "3.8"
