@@ -8,7 +8,6 @@ from dclient.controllers.healthcheck import get_healthcheck
 from dclient.controllers.versionlock import post_versionlock, get_versionlock
 
 from flask import Flask, request
-from gunicorn.app.wsgiapp import WSGIApplication
 
 import logging.handlers
 
@@ -21,36 +20,21 @@ rotating_log_handeler.setLevel(logging.DEBUG)
 logging.getLogger('').addHandler(rotating_log_handeler)
 
 
-class DClient(WSGIApplication):
-    def __init__(self, app, options=None):
-        self.options = options or {}
-        self.application = app
-        super(WSGIApplication, self).__init__()
-
-    def load_config(self):
-        config = {key: value for key, value in self.options.items()
-                  if key in self.cfg.settings and value is not None}
-        for key, value in config.items():
-            self.cfg.set(key.lower(), value)
-
-    def load(self):
-        return self.application
-
-
 def create_app():
     """
     Create the dclient app
     :return: app
     """
-    if not Config.TOKEN:
-        register_dclient()
-    else:
-        set_state("ACTIVE")
 
     app = Flask(__name__)
     app.config.from_object(Config)
 
     with app.app_context():
+        if not Config.TOKEN:
+            register_dclient()
+        else:
+            set_state("ACTIVE")
+
         @app.route("/", methods=["GET"])
         def healthcheck():
             if request.method == "GET":
@@ -79,19 +63,3 @@ def create_app():
                 return get_versionlock()
 
     return app
-
-
-if __name__ == "__main__":
-    options = {
-        "bind": "%s:%s" % ("0.0.0.0", "8003"),
-        "workers": 1,
-        "reload-engine": "auto",
-        "spew": False,
-        "access-logformat": "%(h)s %(l)s %(u)s %(t)s '%(r)s' %(s)s %(b)s '%(f)s' '%(a)s'",
-        "disable-redirect-access-to-syslog": False,
-        "log-level": "debug",
-        "capture-output": True,
-        "worker_class": "sync",
-        "timeout": 600
-    }
-    DClient(create_app(), options).run()
