@@ -22,6 +22,8 @@ def post_update():
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
         response = {
             "hostname": Config.HOSTNAME,
+            "port": Config.PORT,
+            "api_version": Config.API_VERSION,
             "status": "FAILED",
             "message": "POST update failed.",
             "exception": str(e),

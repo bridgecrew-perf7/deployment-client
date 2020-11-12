@@ -50,6 +50,8 @@ def post_rollback():
         response = {
             "body": {
                 "hostname": Config.HOSTNAME,
+                "port": Config.PORT,
+                "api_version": Config.API_VERSION,
                 "status": "SUCCESS",
                 "message": "Deployment successfully rolled back.",
             },
@@ -78,6 +80,8 @@ def post_rollback():
 
         response = {
             "hostname": Config.HOSTNAME,
+            "port": Config.PORT,
+            "api_version": Config.API_VERSION,
             "status": "FAILED",
             "message": "Deployment rollback failed.",
             "exception": str(e),

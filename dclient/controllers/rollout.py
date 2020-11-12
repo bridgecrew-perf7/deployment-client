@@ -62,6 +62,8 @@ def post_rollout():
 
         response = {
             "hostname": Config.HOSTNAME,
+            "port": Config.PORT,
+            "api_version": Config.API_VERSION,
             "status": "SUCCESS",
             "message": "Rollout successfully executed.",
         }
@@ -90,6 +92,8 @@ def post_rollout():
 
         response = {
             "hostname": Config.HOSTNAME,
+            "port": Config.PORT,
+            "api_version": Config.API_VERSION,
             "status": "FAILED",
             "message": "POST rollout failed.",
             "exception": str(e),
