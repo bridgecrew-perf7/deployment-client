@@ -11,9 +11,7 @@ def post_update():
     try:
         headers = {"Authorization": Config.TOKEN}
         payload = {
-            "hostname": data["hostname"],
-            "port": data["port"],
-            "api_version": data["api_version"],
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
             "state": "UPDATING",
         }
         http = get_http()
@@ -27,17 +25,16 @@ def post_update():
     except Exception as e:
         headers = {"Authorization": Config.TOKEN}
         payload = {
-            "hostname": data["hostname"],
-            "port": data["port"],
-            "api_version": data["api_version"],
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
             "state": "ERROR",
         }
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
         response = {
-            "hostname": Config.HOSTNAME,
-            "port": Config.PORT,
-            "api_version": Config.API_VERSION,
+            "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "port": Config.DEPLOYMENT_CLIENT_PORT,
+            "version": Config.DEPLOYMENT_CLIENT_VERSION,
             "status": "FAILED",
             "message": "POST update failed.",
             "exception": str(e),

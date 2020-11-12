@@ -13,100 +13,39 @@ Inside thew VM, do the following:
 4  chown deployment:deployment -R /var/log/deployment/
 5  vi /etc/pip.conf >>>
 
-[global]
-index-url = https://pypi.unifiedlayer.com/root/stable/
+    [global]
+    index-url = https://pypi.unifiedlayer.com/root/stable/
 
-[search]
-index = https://pypi.unifiedlayer.com/root/stable/
+    [search]
+    index = https://pypi.unifiedlayer.com/root/stable/
 
 
-6  vi /etc/hosts >>> 
-           <host system IP address> <deployment proxy hostname >
-           Example: 192.168.0.232 deployment-proxy.unifiedlayer.com
+6  vi /etc/hosts >>>
+    <host system IP address> <deployment proxy hostname >
+    Example: 192.168.0.232 deployment-proxy.unifiedlayer.com
 
 7  Install dclient from pypi:
-       ` pip3 install dclient`
-   If already Installed, Upgrade the dclient package to the latest version:
-        `pip3 install --upgrade dclient`
+   ` pip3 install dclient`
+    If already Installed, Upgrade the dclient package to the latest version:
+    `pip3 install --upgrade dclient`
 
 8  cp /vagrant/files/dclient.service /usr/lib/systemd/system/
 9  vi /usr/lib/systemd/system/dclient.service. >>> Change User and Group to deployment
 10  mkdir /opt/deployment/client
 11  chown deployment:deployment /opt/deployment/client/
 12  cp /vagrant/files/dev /etc/default/dclient
-13  vi /etc/default/dclient >>>
-
-    HOSTNAME=<VM's hostname> Example: deployment-client.com
-    PORT=8003
-    API_VERSION=v1
-    IP=<Host system IP> Example: 192.168.0.232
-    STATE=NEW
-    GROUP=hp_web
-    ENVIRONMENT=PRODUCTION
-    LOCATION=PROVO
-    DEPLOYMENT_PROXY=deploy-proxy.hp.provo1.endurancemb.com
-    PROXY_PORT=8002
-    LOG_FILE=/var/log/deployment/dclient.log
-    LOG_MAX_BYTES=1000000
-    LOG_BACKUP_COUNT=10
-
+13  Edit the env file as per your environment. Refer files: files/dev or files/prod for reference.
+    `vi /etc/default/dclient`
 
 14  chown deployment:deployment /etc/default/dclient
 15  mkdir /etc/deployment
 16  chown deployment:deployment /etc/deployment/
 17  cp /vagrant/files/dclient.conf /etc/deployment/
 18  chown deployment:deployment /etc/deployment/dclient.conf
-19  vi /etc/deployment/dclient.conf >>>
-
-    # All values can be overwritten by using environment variables.
-# default environment file /etc/default/dclient
-# set environment file export ENV_FILE=
-# default configuration file /etc/deployment/dclient.conf
-# set configuration file export CONFIG_FILE=
-
-# hostname to use for the deployment-proxy
-# must be resolveable and reachable from the deployment-api and deployment-clients
-HOSTNAME="www0.hp.provo1.endurancemb.com"
-IP="10.24.244.27"
-PORT="8003"
-API_VERSION="v1"
-
-# api endpoint url for the deployment-proxy
-# running on port 8002
-# api version 1.0.0
-DEPLOYMENT_PROXY="localhost.localdomain"
-PROXY_PORT="8002"
-# api endpoint url for the deployment-api
-# running on port 443 behind nginx (port 8000)
-# api version 1.0.0
-
-# the environment file to load environment variables from.
-# default /etc/default/dclient
-ENV_FILE="/etc/default/dclient"
-
-# HTTP HELPER
-# number of times to retry requests
-RETRY=10
-# {backoff factor} * (2 ** ({number of total retries} - 1))
-#For example, if the backoff factor is set to:
-#1 second the successive sleeps will be 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256.
-#2 seconds - 1, 2, 4, 8, 16, 32, 64, 128, 256, 512
-#10 seconds - 5, 10, 20, 40, 80, 160, 320, 640, 1280, 2560
-BACKOFF_FACTOR=1
-# the http status codes to retry
-STATUS_FORCELIST=[429, 500, 502, 503, 504]
-# the http methods to retry
-METHOD_WHITELIST=["HEAD", "GET", "OPTIONS", "TRACE", "DELETE", "PUT", "PATCH", "POST"]
-# default timeout in seconds
-DEFAULT_TIMEOUT=3
-# default log file name
-LOG_FILE=/var/log/deployment/dclient.log
-# max file size before roll
-LOG_MAX_BYTES=1000000
-# number of previous logs to retain
-LOG_BACKUP_COUNT=10
+19  Edit the config file as per your environment. Refer files: files/dclient.conf for reference.
+    `vi /etc/deployment/dclient.conf`
 
 20  systemctl enable dclient
 21  systemctl status dclient
 22  systemctl start dclient
-   On making a change to service file, run `systemctl daemon-reload
+On making a change to service file, run `systemctl daemon-reload

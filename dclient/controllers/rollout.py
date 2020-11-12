@@ -13,11 +13,8 @@ from dclient.util.core import (
 def post_rollout():
     data = request.get_json()
 
-    headers = {"Authorization": Config.TOKEN}
     payload = {
-        "hostname": data["hostname"],
-        "port": data["port"],
-        "api_version": data["api_version"],
+        "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
         "state": "UPDATING",
     }
     http = get_http()
@@ -54,33 +51,30 @@ def post_rollout():
         }
         http = get_http()
         http.post(
-            f"{Config.DEPLOYMENT_API_URI}/server/history/{data['hostname']}",
+            f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.DEPLOYMENT_CLIENT_HOSTNAME}",
             headers=headers,
             json=payload,
         )
 
         payload = {
-            "hostname": data["hostname"],
-            "port": data["port"],
-            "api_version": data["api_version"],
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
             "state": "ACTIVE",
         }
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
         response = {
-            "hostname": Config.HOSTNAME,
-            "port": Config.PORT,
-            "api_version": Config.API_VERSION,
+            "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "port": Config.DEPLOYMENT_CLIENT_PORT,
+            "version": Config.DEPLOYMENT_CLIENT_VERSION,
             "status": "SUCCESS",
             "message": "Rollout successfully executed.",
         }
         return response, 201
     except Exception as e:
         payload = {
-            "hostname": data["hostname"],
-            "port": data["port"],
-            "api_version": data["api_version"],
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
             "state": "ERROR",
         }
         http = get_http()
@@ -97,15 +91,16 @@ def post_rollout():
         }
         http = get_http()
         http.post(
-            f"{Config.DEPLOYMENT_API_URI}/server/history/{data['hostname']}",
+            f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.DEPLOYMENT_CLIENT_HOSTNAME}",
             headers=headers,
             json=payload,
         )
 
         response = {
-            "hostname": Config.HOSTNAME,
-            "port": Config.PORT,
-            "api_version": Config.API_VERSION,
+            "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "port": Config.DEPLOYMENT_CLIENT_PORT,
+            "version": Config.DEPLOYMENT_CLIENT_VERSION,
             "status": "FAILED",
             "message": "POST rollout failed.",
             "exception": str(e),

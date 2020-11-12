@@ -1,13 +1,1 @@
-HOSTNAME=www0.hp.provo1.endurancemb.com
-PORT=8003
-API_VERSION=v1
-IP=10.24.244.27
 STATE=NEW
-GROUP=hp_web
-ENVIRONMENT=DEVELOPMENT
-LOCATION=PROVO
-DEPLOYMENT_PROXY=deploy-proxy.hp.provo1.endurancemb.com
-PROXY_PORT=8002
-LOG_FILE=/var/log/deployment/dclient.log
-LOG_MAX_BYTES=1000000
-LOG_BACKUP_COUNT=10
