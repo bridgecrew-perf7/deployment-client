@@ -123,15 +123,16 @@ def register_dclient():
 
     data = {
         "created_by": "dclient",
-        "hostname": get_var("HOSTNAME"),
-        "port": get_var("PORT"),
-        "api_version": get_var("API_VERSION"),
-        "ip": get_var("IP"),
+        "hostname": Config.HOSTNAME,
+        "port": Config.PORT,
+        "protocol": Config.PROTOCOL,
+        "version": Config.VERSION,
+        "ip": Config.IP,
         "state": "ACTIVE",
-        "group": get_var("GROUP"),
-        "environment": get_var("ENVIRONMENT"),
-        "location": get_var("LOCATION"),
-        "deployment_proxy": get_var("DEPLOYMENT_PROXY"),
+        "group": Config.GROUP,
+        "environment": Config.ENVIRONMENT,
+        "location": Config.LOCATION,
+        "deployment_proxy": Config.DEPLOYMENT_PROXY,
     }
     http = get_http()
     r = http.post(f"{Config.DEPLOYMENT_API_URI}/register", json=data)
