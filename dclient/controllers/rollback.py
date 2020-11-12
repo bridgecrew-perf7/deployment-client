@@ -12,9 +12,7 @@ def post_rollback():
     app.logger.info(data)
     headers = {"Authorization": Config.TOKEN}
     payload = {
-        "hostname": data["hostname"],
-        "port": data["port"],
-        "api_version": data["api_version"],
+        "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
         "state": "UPDATING",
     }
     http = get_http()
@@ -42,15 +40,13 @@ def post_rollback():
         }
         http = get_http()
         http.post(
-            f"{Config.DEPLOYMENT_API_URI}/server/history/{data['hostname']}",
+            f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.DEPLOYMENT_CLIENT_HOSTNAME}",
             headers=headers,
             json=payload,
         )
 
         payload = {
-            "hostname": data["hostname"],
-            "port": data["port"],
-            "api_version": data["api_version"],
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
             "state": "ACTIVE",
         }
         http = get_http()
@@ -58,9 +54,10 @@ def post_rollback():
 
         response = {
             "body": {
-                "hostname": Config.HOSTNAME,
-                "port": Config.PORT,
-                "api_version": Config.API_VERSION,
+                "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+                "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+                "port": Config.DEPLOYMENT_CLIENT_PORT,
+                "version": Config.DEPLOYMENT_CLIENT_VERSION,
                 "status": "SUCCESS",
                 "message": "Deployment successfully rolled back.",
             },
@@ -68,9 +65,7 @@ def post_rollback():
         return response, 201
     except Exception as e:
         payload = {
-            "hostname": data["hostname"],
-            "port": data["port"],
-            "api_version": data["api_version"],
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
             "state": "ERROR",
         }
         http = get_http()
@@ -80,7 +75,7 @@ def post_rollback():
         yum_rollback_id = yum_transaction_id - 1
 
         payload = {
-            "deployment_id": data["deployment_id"],
+            "deployment_id": int(data["deployment_id"]),
             "action": "Update",
             "state": "FAILED",
             "yum_transaction_id": yum_transaction_id,
@@ -88,14 +83,15 @@ def post_rollback():
         }
         http = get_http()
         http.post(
-            f"{Config.DEPLOYMENT_API_URI}/server/history/{data['hostname']}",
+            f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.DEPLOYMENT_CLIENT_HOSTNAME}",
             json=payload,
         )
 
         response = {
-            "hostname": Config.HOSTNAME,
-            "port": Config.PORT,
-            "api_version": Config.API_VERSION,
+            "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "port": Config.DEPLOYMENT_CLIENT_PORT,
+            "version": Config.DEPLOYMENT_CLIENT_VERSION,
             "status": "FAILED",
             "message": "Deployment rollback failed.",
             "exception": str(e),

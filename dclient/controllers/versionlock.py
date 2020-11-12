@@ -16,20 +16,23 @@ def post_versionlock():
             if stat != 0:
                 raise Exception(stat)
         response = {
-            "hostname": Config.HOSTNAME,
-            "port": Config.PORT,
-            "api_version": Config.API_VERSION,
+            "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "port": Config.DEPLOYMENT_CLIENT_PORT,
+            "version": Config.DEPLOYMENT_CLIENT_VERSION,
             "status": "SUCCESS",
             "message": "New versionlock list successfully created.",
         }
         return response, 201
-    except:
+    except Exception as e:
         response = {
-            "hostname": Config.HOSTNAME,
-            "port": Config.PORT,
-            "api_version": Config.API_VERSION,
+            "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "port": Config.DEPLOYMENT_CLIENT_PORT,
+            "version": Config.DEPLOYMENT_CLIENT_VERSION,
             "status": "FAILED",
             "message": "POST versionlock list failed.",
+            "exception": str(e)
         }
         return response, 409
 
@@ -49,20 +52,23 @@ def get_versionlock():
             else:
                 versionlock_list.append(vl)
         response = {
-            "hostname": Config.HOSTNAME,
-            "port": Config.PORT,
-            "api_version": Config.API_VERSION,
+            "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "port": Config.DEPLOYMENT_CLIENT_PORT,
+            "version": Config.DEPLOYMENT_CLIENT_VERSION,
             "status": "SUCCESS",
             "message": "Versionlock list successfully retrieved",
             "versionlock": versionlock_list,
         }
         return response, 200
-    except:
+    except Exception as e:
         response = {
-            "hostname": Config.HOSTNAME,
-            "port": Config.PORT,
-            "api_version": Config.API_VERSION,
+            "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "port": Config.DEPLOYMENT_CLIENT_PORT,
+            "version": Config.DEPLOYMENT_CLIENT_VERSION,
             "status": "FAILED",
             "message": "Failed to GET versionlock list",
+            "exception": str(e)
         }
         return response, 409
