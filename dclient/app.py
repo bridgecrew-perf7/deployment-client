@@ -5,7 +5,7 @@ from dclient.controllers.rollout import post_rollout
 from dclient.controllers.rollback import post_rollback
 from dclient.util.core import set_state, register_dclient
 from dclient.controllers.healthcheck import get_healthcheck
-from dclient.controllers.versionlock import post_versionlock, get_versionlock
+from dclient.controllers.versionlock import get_versionlock
 
 from flask import Flask, request
 
@@ -20,46 +20,38 @@ rotating_log_handeler.setLevel(logging.DEBUG)
 logging.getLogger('').addHandler(rotating_log_handeler)
 
 
-def create_app():
-    """
-    Create the dclient app
-    :return: app
-    """
+app = Flask(__name__)
+app.config.from_object(Config)
 
-    app = Flask(__name__)
-    app.config.from_object(Config)
+with app.app_context():
+    if not Config.TOKEN:
+        register_dclient()
+    else:
+        set_state("ACTIVE")
 
-    with app.app_context():
-        if not Config.TOKEN:
-            register_dclient()
-        else:
-            set_state("ACTIVE")
+    @app.route("/", methods=["GET"])
+    def healthcheck():
+        if request.method == "GET":
+            return get_healthcheck()
 
-        @app.route("/", methods=["GET"])
-        def healthcheck():
-            if request.method == "GET":
-                return get_healthcheck()
+    @app.route("/update", methods=["POST"])
+    def update():
+        if request.method == "POST":
+            return post_update()
 
-        @app.route("/update", methods=["POST"])
-        def update():
-            if request.method == "POST":
-                return post_update()
+    @app.route("/rollout", methods=["POST"])
+    def rollout():
+        if request.method == "POST":
+            return post_rollout()
 
-        @app.route("/rollout", methods=["POST"])
-        def rollout():
-            if request.method == "POST":
-                return post_rollout()
+    @app.route("/rollback", methods=["POST"])
+    def rollback():
+        if request.method == "POST":
+            return post_rollback()
 
-        @app.route("/rollback", methods=["POST"])
-        def rollback():
-            if request.method == "POST":
-                return post_rollback()
-
-        @app.route("/versionlock", methods=["GET", "POST"])
-        def versionlock():
-            if request.method == "POST":
-                return post_versionlock()
-            elif request.method == "GET":
-                return get_versionlock()
-
-    return app
+    @app.route("/versionlock", methods=["GET"])
+    def versionlock():
+        if request.method == "POST":
+            return post_versionlock()
+        elif request.method == "GET":
+            return get_versionlock()

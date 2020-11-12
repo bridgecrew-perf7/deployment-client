@@ -6,18 +6,20 @@ from dclient.util.core import get_yum_transaction_id, restart_service
 import os
 from flask import request
 
+
 def post_rollback():
     data = request.get_json()
     app.logger.info(data)
     headers = {"Authorization": Config.TOKEN}
-    payload = {"hostname": data["hostname"], "state": "UPDATING"}
+    payload = {"hostname": Config.HOSTNAME, "state": "UPDATING"}
     http = get_http()
     http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
     try:
         os.system(f"yum -y history rollback {data['yum_rollback_id']}")
-        for pkg in data["versionlock"]:
-            os.system(f"yum versionlock add {pkg}")
+        if "versionlock" in data:
+            for pkg in data["versionlock"]:
+                os.system(f"sudo yum versionlock add {pkg}")
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
         if "buildall" in data:
@@ -36,12 +38,12 @@ def post_rollback():
         }
         http = get_http()
         http.post(
-            f"{Config.DEPLOYMENT_API_URI}/server/history/{data['hostname']}",
+            f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.HOSTNAME}",
             headers=headers,
             json=payload,
         )
 
-        payload = {"hostname": data["hostname"], "state": "ACTIVE"}
+        payload = {"hostname": Config.HOSTNAME, "state": "ACTIVE"}
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
@@ -54,7 +56,7 @@ def post_rollback():
         }
         return response, 201
     except Exception as e:
-        payload = {"hostname": data["hostname"], "state": "ERROR"}
+        payload = {"hostname": Config.HOSTNAME, "state": "ERROR"}
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
@@ -62,7 +64,7 @@ def post_rollback():
         yum_rollback_id = yum_transaction_id - 1
 
         payload = {
-            "deployment_id": data["deployment_id"],
+            "deployment_id": int(data["deployment_id"]),
             "action": "Update",
             "state": "FAILED",
             "yum_transaction_id": yum_transaction_id,
@@ -70,7 +72,7 @@ def post_rollback():
         }
         http = get_http()
         http.post(
-            f"{Config.DEPLOYMENT_API_URI}/server/history/{data['hostname']}",
+            f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.HOSTNAME}",
             json=payload,
         )
 

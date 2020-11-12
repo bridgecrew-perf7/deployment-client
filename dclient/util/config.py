@@ -31,6 +31,7 @@ def get_config():
             for line in cfg:
                 try:
                     (k, v) = line.split("=", 1)
+                    v = v.rstrip("\n")
                     config[k] = v
                 except:
                     pass
@@ -56,6 +57,9 @@ def get_var(var):
 class Config(object):
     HOSTNAME = get_var("HOSTNAME")
     IP = get_var("IP")
+    PORT = get_var("PORT")
+    PROTOCOL = get_var("PROTOCOL")
+    VERSION = get_var("VERSION")
     STATE = get_var("STATE")
     LOCATION = get_var("LOCATION")
     ENVIRONMENT = get_var("ENVIRONMENT")

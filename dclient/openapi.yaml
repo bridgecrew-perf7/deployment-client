@@ -68,19 +68,18 @@ paths:
         default:
           description: successful operation
   /versionlock:
-    post:
-      summary: create a versionlock
-      operationId: dclient.controllers.versionlock.post_versionlock
-      requestBody:
-        description: Create Versionlock object
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/VersionLock'
-        required: true
+    get:
+      summary: get versionlock list
+      operationId: dclient.controllers.versionlock.get_versionlock
       responses:
-        default:
-          description: successful operation
+        "200":
+          description: get versionlock list
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/VersionLock'
 components:
   schemas:
     HealthCheck:
