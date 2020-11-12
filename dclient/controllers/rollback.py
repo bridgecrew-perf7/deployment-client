@@ -10,8 +10,10 @@ from flask import request
 def post_rollback():
     data = request.get_json()
     app.logger.info(data)
-    headers = {"Authorization": Config.TOKEN}
-    payload = {"hostname": Config.HOSTNAME, "state": "UPDATING"}
+    payload = {
+        "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+        "state": "UPDATING",
+    }
     http = get_http()
     http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
@@ -38,27 +40,34 @@ def post_rollback():
         }
         http = get_http()
         http.post(
-            f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.HOSTNAME}",
+            f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.DEPLOYMENT_CLIENT_HOSTNAME}",
             headers=headers,
             json=payload,
         )
 
-        payload = {"hostname": Config.HOSTNAME, "state": "ACTIVE"}
+        payload = {
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "state": "ACTIVE",
+        }
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
         response = {
             "body": {
-                "hostname": Config.HOSTNAME,
-                "port": Config.PORT,
-                "api_version": Config.API_VERSION,
+                "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+                "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+                "port": Config.DEPLOYMENT_CLIENT_PORT,
+                "version": Config.DEPLOYMENT_CLIENT_VERSION,
                 "status": "SUCCESS",
                 "message": "Deployment successfully rolled back.",
             },
         }
         return response, 201
     except Exception as e:
-        payload = {"hostname": Config.HOSTNAME, "state": "ERROR"}
+        payload = {
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "state": "ERROR",
+        }
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
@@ -74,14 +83,15 @@ def post_rollback():
         }
         http = get_http()
         http.post(
-            f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.HOSTNAME}",
+            f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.DEPLOYMENT_CLIENT_HOSTNAME}",
             json=payload,
         )
 
         response = {
-            "hostname": Config.HOSTNAME,
-            "port": Config.PORT,
-            "api_version": Config.API_VERSION,
+            "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "port": Config.DEPLOYMENT_CLIENT_PORT,
+            "version": Config.DEPLOYMENT_CLIENT_VERSION,
             "status": "FAILED",
             "message": "Deployment rollback failed.",
             "exception": str(e),

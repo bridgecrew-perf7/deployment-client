@@ -9,7 +9,11 @@ from flask import request
 def post_update():
     data = request.get_json()
     try:
-        payload = {"hostname": Config.HOSTNAME, "state": "UPDATING"}
+        headers = {"Authorization": Config.TOKEN}
+        payload = {
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "state": "UPDATING",
+        }
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
         for pkg in data["packages"]:
@@ -17,13 +21,18 @@ def post_update():
         install_pkgs(data["packages"])
         restart_service("dclient.service")
     except Exception as e:
-        payload = {"hostname": Config.HOSTNAME, "state": "ERROR"}
+        headers = {"Authorization": Config.TOKEN}
+        payload = {
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "state": "ERROR",
+        }
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
         response = {
-            "hostname": Config.HOSTNAME,
-            "port": Config.PORT,
-            "api_version": Config.API_VERSION,
+            "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "port": Config.DEPLOYMENT_CLIENT_PORT,
+            "version": Config.DEPLOYMENT_CLIENT_VERSION,
             "status": "FAILED",
             "message": "POST update failed.",
             "exception": str(e),

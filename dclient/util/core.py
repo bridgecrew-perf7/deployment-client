@@ -100,9 +100,10 @@ def set_state(state):
     :return:
     """
     data = {
-        "hostname": get_var("HOSTNAME"),
-        "port": get_var("PORT"),
-        "api_version": get_var("API_VERSION"),
+        "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+        "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+        "port": Config.DEPLOYMENT_CLIENT_PORT,
+        "version": Config.DEPLOYMENT_CLIENT_VERSION,
         "state": state,
     }
     http = get_http()
@@ -123,16 +124,16 @@ def register_dclient():
 
     data = {
         "created_by": "dclient",
-        "hostname": Config.HOSTNAME,
-        "port": Config.PORT,
-        "protocol": Config.PROTOCOL,
-        "version": Config.VERSION,
-        "ip": Config.IP,
+        "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+        "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+        "port": Config.DEPLOYMENT_CLIENT_PORT,
+        "version": Config.DEPLOYMENT_CLIENT_VERSION,
+        "ip": Config.DEPLOYMENT_CLIENT_IP,
         "state": "ACTIVE",
         "group": Config.GROUP,
         "environment": Config.ENVIRONMENT,
         "location": Config.LOCATION,
-        "deployment_proxy": Config.DEPLOYMENT_PROXY,
+        "deployment_proxy": Config.DEPLOYMENT_PROXY_HOSTNAME,
     }
     http = get_http()
     r = http.post(f"{Config.DEPLOYMENT_API_URI}/register", json=data)
