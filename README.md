@@ -37,14 +37,19 @@ index = https://pypi.unifiedlayer.com/root/stable/
 13  vi /etc/default/dclient >>>
 
     HOSTNAME=<VM's hostname> Example: deployment-client.com
+    PORT=8003
+    API_VERSION=v1
     IP=<Host system IP> Example: 192.168.0.232
     STATE=NEW
     GROUP=hp_web
     ENVIRONMENT=PRODUCTION
     LOCATION=PROVO
-    URL=<VM's URL> Example:http://deployment-client.com:8003
-    DEPLOYMENT_PROXY=<Deployment Proxy Hostname> Example: deployment-proxy.unifiedlayer.com
-    DEPLOYMENT_SERVER_URL=<Deployment Proxy's URL>Example: http://deployment-proxy.unifiedlayer.com:8002/api/1.0.0
+    DEPLOYMENT_PROXY=deploy-proxy.hp.provo1.endurancemb.com
+    PROXY_PORT=8002
+    LOG_FILE=/var/log/deployment/dclient.log
+    LOG_MAX_BYTES=1000000
+    LOG_BACKUP_COUNT=10
+
 
 14  chown deployment:deployment /etc/default/dclient
 15  mkdir /etc/deployment
@@ -53,8 +58,7 @@ index = https://pypi.unifiedlayer.com/root/stable/
 18  chown deployment:deployment /etc/deployment/dclient.conf
 19  vi /etc/deployment/dclient.conf >>>
 
-
-# All values can be overwritten by using environment variables.
+    # All values can be overwritten by using environment variables.
 # default environment file /etc/default/dclient
 # set environment file export ENV_FILE=
 # default configuration file /etc/deployment/dclient.conf
@@ -62,21 +66,19 @@ index = https://pypi.unifiedlayer.com/root/stable/
 
 # hostname to use for the deployment-proxy
 # must be resolveable and reachable from the deployment-api and deployment-clients
-HOSTNAME=<VM's Hostname>"deployment-client.com"
-IP=<Host's IP>"192.168.0.232"
+HOSTNAME="www0.hp.provo1.endurancemb.com"
+IP="10.24.244.27"
+PORT="8003"
+API_VERSION="v1"
 
 # api endpoint url for the deployment-proxy
 # running on port 8002
 # api version 1.0.0
-DEPLOYMENT_PROXY="deployment-proxy.unifiedlayer.com"
-
+DEPLOYMENT_PROXY="localhost.localdomain"
+PROXY_PORT="8002"
 # api endpoint url for the deployment-api
 # running on port 443 behind nginx (port 8000)
 # api version 1.0.0
-DEPLOYMENT_API_URI="http://deployment-proxy.unifiedlayer.com:8002/api/1.0.0"
-
-# the url endpoint for dclient
-URL="http://deployment-client.com:8003"
 
 # the environment file to load environment variables from.
 # default /etc/default/dclient
@@ -97,6 +99,12 @@ STATUS_FORCELIST=[429, 500, 502, 503, 504]
 METHOD_WHITELIST=["HEAD", "GET", "OPTIONS", "TRACE", "DELETE", "PUT", "PATCH", "POST"]
 # default timeout in seconds
 DEFAULT_TIMEOUT=3
+# default log file name
+LOG_FILE=/var/log/deployment/dclient.log
+# max file size before roll
+LOG_MAX_BYTES=1000000
+# number of previous logs to retain
+LOG_BACKUP_COUNT=10
 
 20  systemctl enable dclient
 21  systemctl status dclient

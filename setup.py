@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="dclient",
-    version="0.1.71",
+    version="0.1.79",
     author="Jacob Bushman",
     author_email="jacob.matthew.bushman@endurance.com",
     description="Deployment Client API",
@@ -21,12 +21,7 @@ setup(
         "License :: OSI Approved :: Apache 2.0",
         "Operating System :: OS Independent",
     ],
-    install_requires=[
-        "python-dotenv",
-        "requests",
-        "flask",
-        "gunicorn"
-    ],
+    install_requires=["python-dotenv", "requests", "flask", "gunicorn"],
     scripts=["dclient/dclient"],
-    python_requires=">=3.6"
+    python_requires=">=3.6",
 )

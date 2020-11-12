@@ -55,14 +55,16 @@ def get_var(var):
 
 class Config(object):
     HOSTNAME = get_var("HOSTNAME")
+    PORT = get_var("PORT")
+    API_VERSION = get_var("API_VERSION")
     IP = get_var("IP")
     STATE = get_var("STATE")
     LOCATION = get_var("LOCATION")
     ENVIRONMENT = get_var("ENVIRONMENT")
     GROUP = get_var("GROUP")
-    URL = get_var("URL")
-    DEPLOYMENT_API_URI = get_var("DEPLOYMENT_API_URI")
     DEPLOYMENT_PROXY = get_var("DEPLOYMENT_PROXY")
+    PROXY_PORT = get_var("PROXY_PORT")
+    DEPLOYMENT_API_URI = f"http://{DEPLOYMENT_PROXY}:{PROXY_PORT}/api/{API_VERSION}"
     TOKEN = get_var("TOKEN")
     ENV_FILE = get_var("ENV_FILE")
     RETRY = get_var("RETRY")

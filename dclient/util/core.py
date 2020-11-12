@@ -11,6 +11,7 @@ load_dotenv("/etc/default/dclient")
 
 logger = logging.getLogger("Register")
 
+
 class LastUpdated(OrderedDict):
     def __setitem__(self, key, value):
         super().__setitem__(key, value)
@@ -94,7 +95,12 @@ def set_state(state):
     Keep the state in sync with Deployment-api
     :return:
     """
-    data = {"hostname": get_var("HOSTNAME"), "state": state}
+    data = {
+        "hostname": get_var("HOSTNAME"),
+        "port": get_var("PORT"),
+        "api_version": get_var("API_VERSION"),
+        "state": state,
+    }
     http = get_http()
     r = http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=data)
     if r.status_code == 201:
@@ -114,12 +120,13 @@ def register_dclient():
     data = {
         "created_by": "dclient",
         "hostname": get_var("HOSTNAME"),
+        "port": get_var("PORT"),
+        "api_version": get_var("API_VERSION"),
         "ip": get_var("IP"),
         "state": "ACTIVE",
         "group": get_var("GROUP"),
         "environment": get_var("ENVIRONMENT"),
         "location": get_var("LOCATION"),
-        "url": get_var("URL"),
         "deployment_proxy": get_var("DEPLOYMENT_PROXY"),
     }
     http = get_http()
