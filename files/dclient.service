@@ -8,7 +8,7 @@ Group=hp_deploy
 EnvironmentFile=/etc/default/dclient
 RuntimeDirectory=dclient
 WorkingDirectory=/opt/deployment/client
-ExecStart=/usr/local/bin/dclient
+ExecStart=/usr/local/bin/gunicorn -b 0.0.0.0:8003 --log-level=INFO --workers=1 --timeout=90 'dclient.app:app'
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed
 TimeoutStopSec=5
