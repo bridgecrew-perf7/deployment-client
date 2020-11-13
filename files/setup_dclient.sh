@@ -48,7 +48,7 @@ else
 fi
 
 
-
+environment="PRODUCTION"
 
 if [[ $mode == *"dev"* ]]
 then
@@ -60,6 +60,7 @@ then
 		#Install dclient
 		pip3 install dclient
 	fi
+	environment="DEVELOPMENT"
 else
 	echo "RPM install not implemented"
 	#install dclient rpm
@@ -80,7 +81,7 @@ EnvironmentFile=/etc/default/dclient
 RuntimeDirectory=dclient
 WorkingDirectory=/opt/deployment/client
 ExecStart=/usr/local/bin/gunicorn -b 0.0.0.0:8003 --log-level=INFO --workers=1 --timeout=90 'dclient.app:app'
-ExecReload=/bin/kill -s HUP $MAINPID
+ExecReload=/bin/kill -s HUP \$MAINPID
 KillMode=mixed
 TimeoutStopSec=5
 PrivateTmp=true
@@ -95,15 +96,6 @@ chown $username:$username /opt/deployment/client
 echo "Writing /etc/default/dclient"
 cat > /etc/default/dclient <<- EOM
 STATE=NEW
-HOSTNAME=$HOSTNAME
-IP=$(hostname -I)
-STATE=NEW
-GROUP=hp_web
-ENVIRONMENT=PRODUCTION
-LOCATION=PROVO
-URL=http://$HOSTNAME:8003
-DEPLOYMENT_PROXY=deployment-proxy.unifiedlayer.com
-DEPLOYMENT_SERVER_URL=http://deployment-proxy.unifiedlayer.com:8002/api/1.0.0
 EOM
 
 chown $username:$username /etc/default/dclient
@@ -138,7 +130,7 @@ DEPLOYMENT_PROXY_VERSION=v1
 
 #Deployment-client specifications
 GROUP=hp_web
-ENVIRONMENT=DEVELOPMENT
+ENVIRONMENT=$environment
 LOCATION=PROVO
 
 # the environment file to load environment variables from.
