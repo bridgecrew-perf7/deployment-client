@@ -152,6 +152,8 @@ STATUS_FORCELIST=[429, 500, 502, 503, 504]
 METHOD_WHITELIST=["HEAD", "GET", "OPTIONS", "TRACE", "DELETE", "PUT", "PATCH", "POST"]
 # default timeout in seconds
 DEFAULT_TIMEOUT=30
+
+# Logging
 # default log file name
 LOG_FILE=/var/log/deployment/dclient.log
 # max file size before roll

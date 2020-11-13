@@ -10,7 +10,6 @@ from flask import request
 def post_rollback():
     data = request.get_json()
     app.logger.info(data)
-    headers = {"Authorization": Config.TOKEN}
     payload = {
         "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
         "state": "UPDATING",
@@ -20,8 +19,9 @@ def post_rollback():
 
     try:
         os.system(f"yum -y history rollback {data['yum_rollback_id']}")
-        for pkg in data["versionlock"]:
-            os.system(f"yum versionlock add {pkg}")
+        if "versionlock" in data:
+            for pkg in data["versionlock"]:
+                os.system(f"sudo yum versionlock add {pkg}")
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
         if "buildall" in data:
