@@ -7,25 +7,12 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  version: 1.0.0
+  version: v1
 servers:
   - url: /api/v1
     description: Bluehost Deployment Client
 paths:
   /:
-    post:
-      summary: create a healthcheck
-      operationId: dclient.controllers.healthcheck.post_healthcheck
-      requestBody:
-        description: Create HealthCheck object
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/HealthCheck'
-        required: true
-      responses:
-        default:
-          description: successful operation
     get:
       summary: get healthcheck
       operationId: dclient.controllers.healthcheck.get_healthcheck
@@ -66,34 +53,33 @@ paths:
       responses:
         default:
           description: successful operation
-  /upload:
+  /update:
     post:
-      summary: create an upload
-      operationId: dclient.controllers.upload.post_upload
+      summary: create an update
+      operationId: dclient.controllers.update.post_update
       requestBody:
-        description: Create Upload object
+        description: Create an update object
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Upload'
+              $ref: '#/components/schemas/Update'
         required: true
       responses:
         default:
           description: successful operation
   /versionlock:
-    post:
-      summary: create a versionlock
-      operationId: dclient.controllers.versionlock.post_versionlock
-      requestBody:
-        description: Create Versionlock object
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/VersionLock'
-        required: true
+    get:
+      summary: get versionlock list
+      operationId: dclient.controllers.versionlock.get_versionlock
       responses:
-        default:
-          description: successful operation
+        "200":
+          description: get versionlock list
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/VersionLock'
 components:
   schemas:
     HealthCheck:

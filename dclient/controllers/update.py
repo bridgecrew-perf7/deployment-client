@@ -16,11 +16,9 @@ def post_update():
         }
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
-
         for pkg in data["packages"]:
             os.system(f"sudo yum versionlock add {pkg}")
         install_pkgs(data["packages"])
-
         restart_service("dclient.service")
     except Exception as e:
         headers = {"Authorization": Config.TOKEN}

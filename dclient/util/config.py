@@ -31,6 +31,7 @@ def get_config():
             for line in cfg:
                 try:
                     (k, v) = line.split("=", 1)
+                    v = v.rstrip("\n")
                     config[k] = v
                 except:
                     pass
