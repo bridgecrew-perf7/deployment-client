@@ -162,10 +162,17 @@ EOM
 
 chown $username:$username /etc/deployment/dclient.conf
 
-echo "Enabling and Starting the service"
-systemctl enable dclient
-systemctl status dclient
-systemctl start dclient
+if systemctl is-active --quiet service
+then
+	echo "Existing service running. Refreshing and restarting"
+	systemctl daemon-reload
+	systemctl restart dclient
+else
+	echo "Enabling and Starting the service"
+	systemctl enable dclient
+	systemctl status dclient
+	systemctl start dclient
+fi
  
 
 # Initial setup performed by dclient bootstrap
