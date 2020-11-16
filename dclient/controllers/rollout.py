@@ -6,7 +6,7 @@ from dclient.util.core import (
     get_yum_transaction_id,
     install_pkgs,
     restart_service,
-    get_installed,
+    not_installed,
 )
 
 
@@ -21,15 +21,17 @@ def post_rollout():
     http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
     try:
-        for pkg in data["versionlock"]:
-            stat = os.system(f"sudo yum versionlock add {pkg}")
-            if stat != 0:
-                raise Exception(stat)
-        if not get_installed("httpd"):
-            data["versionlock"].append("httpd")
-        if not get_installed("mod_perl"):
-            data["versionlock"].append("mod_perl")
-        install_pkgs(data["versionlock"])
+        if "versionlock" in data:
+            os.system("sudo yum versionlock clear")
+            if not_installed("httpd"):
+                install_pkgs(["httpd"])
+            if not_installed("mod_perl"):
+                install_pkgs(["mod_perl"])
+            install_pkgs(data["versionlock"])
+            for pkg in data["versionlock"]:
+                stat = os.system(f"sudo yum versionlock add {pkg}")
+                if stat != 0:
+                    raise Exception(stat)
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
         if "buildall" in data:
@@ -49,6 +51,7 @@ def post_rollout():
             "yum_transaction_id": yum_transaction_id,
             "yum_rollback_id": yum_rollback_id,
         }
+        headers = {"Authorization": Config.TOKEN}
         http = get_http()
         http.post(
             f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.DEPLOYMENT_CLIENT_HOSTNAME}",
@@ -89,6 +92,7 @@ def post_rollout():
             "yum_transaction_id": yum_transaction_id,
             "yum_rollback_id": yum_rollback_id,
         }
+        headers = {"Authorization": Config.TOKEN}
         http = get_http()
         http.post(
             f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.DEPLOYMENT_CLIENT_HOSTNAME}",
