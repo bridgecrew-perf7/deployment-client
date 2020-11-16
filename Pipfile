@@ -4,15 +4,14 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pytest-timeout = "*"
 
 [packages]
 python-dotenv = "*"
 requests = "*"
 flask = "*"
 gunicorn = "*"
-dclient = {editable = true, path = "."}
 certifi = "*"
-devpi-client = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.6.8"

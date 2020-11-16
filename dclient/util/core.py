@@ -1,15 +1,15 @@
 from dclient.util.config import Config, get_var
 from dclient.util.http_helper import get_http
-import logging
 import os
 import re
 from dotenv import load_dotenv
 from collections import OrderedDict
 from subprocess import Popen, check_output
+from flask import current_app as app
 
 load_dotenv("/etc/default/dclient")
 
-logger = logging.getLogger("Register")
+
 
 class LastUpdated(OrderedDict):
     def __setitem__(self, key, value):
@@ -17,18 +17,17 @@ class LastUpdated(OrderedDict):
         self.move_to_end(key)
 
 
-def get_installed(rpm):
-    logger.info(f"running check_output(['rpm', '-q', {rpm}])")
-    package = check_output(["rpm", "-q", rpm])
-    z = re.match("not installed", package)
-    if z:
-        return False
-    else:
+def not_installed(rpm):
+    app.logger.debug(f"running rpm -q {rpm}")
+    stat = os.system(f"rpm -q {rpm}")
+    if stat == 1:
         return True
+    else:
+        return False
 
 
 def get_yum_transaction_id():
-    logger.info("running check_output(['sudo', 'yum', 'history', 'list''])")
+    app.logger.info("running check_output(['sudo', 'yum', 'history', 'list''])")
     history_list = check_output(["sudo", "yum", "history", "list"])
     history_list = history_list.splitlines()
     count = 0
@@ -51,16 +50,16 @@ def get_yum_transaction_id():
 
 def install_pkgs(packages):
     packages = " ".join(map(str, packages))
-    logger.info("running os.system('sudo yum clean all')")
+    app.logger.info("running os.system('sudo yum clean all')")
     os.system("sudo yum clean all")
-    logger.info(f"running sudo yum --enablerepo=Production -y install {packages}")
+    app.logger.info(f"running sudo yum --enablerepo=Production -y install {packages}")
     stat = os.system(f"sudo yum --enablerepo=Production -y install {packages}")
     if stat != 0:
         raise Exception(stat)
 
 
 def restart_service(service):
-    logger.info(f"running Popen(['sudo', 'systemctl', 'restart', {service}])")
+    app.logger.info(f"running Popen(['sudo', 'systemctl', 'restart', {service}])")
     Popen(["sudo", "systemctl", "restart", service])
 
 
@@ -71,21 +70,27 @@ def update_env(key, value):
     :param value:
     :return:
     """
-    env = LastUpdated()
-    with open("/etc/default/dclient") as f:
-        for line in f:
-            (k, v) = line.split("=", 1)
-            env[k] = v
-    env[key] = value
-    os.environ[key] = value
+    try:
+        env = LastUpdated()
+        with open("/etc/default/dclient") as f:
+            for line in f:
+                (k, v) = line.split("=", 1)
+                env[k] = v
+        env[key] = value
+        os.environ[key] = value
+    except:
+        raise Exception("Unable to process dclient environment file.")
 
-    with open("/etc/default/dclient", "w") as f:
-        for k in env.keys():
-            line = f"{k}={env[k]}"
-            if "\n" in line:
-                f.write(line)
-            else:
-                f.write(line + "\n")
+    try:
+        with open("/etc/default/dclient", "w") as f:
+            for k in env.keys():
+                line = f"{k}={env[k]}"
+                if "\n" in line:
+                    f.write(line)
+                else:
+                    f.write(line + "\n")
+    except:
+        raise Exception("Unable to update dclient environment file.")
 
 
 def set_state(state):
@@ -94,14 +99,20 @@ def set_state(state):
     Keep the state in sync with Deployment-api
     :return:
     """
-    data = {"hostname": get_var("HOSTNAME"), "state": state}
+    data = {
+        "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+        "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+        "port": Config.DEPLOYMENT_CLIENT_PORT,
+        "version": Config.DEPLOYMENT_CLIENT_VERSION,
+        "state": state,
+    }
     http = get_http()
     r = http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=data)
     if r.status_code == 201:
-        logger.debug(f"Successfully Updated State: {state}")
+        app.logger.debug(f"Successfully Updated State: {state}")
         return True
     else:
-        logger.error(f"Failed to set state: {state}")
+        app.logger.error(f"Failed to set state: {state}")
         return False
 
 
@@ -113,19 +124,21 @@ def register_dclient():
 
     data = {
         "created_by": "dclient",
-        "hostname": get_var("HOSTNAME"),
-        "ip": get_var("IP"),
+        "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+        "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+        "port": Config.DEPLOYMENT_CLIENT_PORT,
+        "version": Config.DEPLOYMENT_CLIENT_VERSION,
+        "ip": Config.DEPLOYMENT_CLIENT_IP,
         "state": "ACTIVE",
-        "group": get_var("GROUP"),
-        "environment": get_var("ENVIRONMENT"),
-        "location": get_var("LOCATION"),
-        "url": get_var("URL"),
-        "deployment_proxy": get_var("DEPLOYMENT_PROXY"),
+        "group": Config.GROUP,
+        "environment": Config.ENVIRONMENT,
+        "location": Config.LOCATION,
+        "deployment_proxy": Config.DEPLOYMENT_PROXY_HOSTNAME,
     }
     http = get_http()
     r = http.post(f"{Config.DEPLOYMENT_API_URI}/register", json=data)
     resp = r.json()
-    logger.debug(f"REGISTER CLIENT: {resp}")
+    app.logger.debug(f"REGISTER CLIENT: {resp}")
     if "token" in resp:
         update_env("TOKEN", resp["token"])
         set_state("ACTIVE")

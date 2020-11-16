@@ -31,6 +31,7 @@ def get_config():
             for line in cfg:
                 try:
                     (k, v) = line.split("=", 1)
+                    v = v.rstrip("\n")
                     config[k] = v
                 except:
                     pass
@@ -54,15 +55,23 @@ def get_var(var):
 
 
 class Config(object):
-    HOSTNAME = get_var("HOSTNAME")
-    IP = get_var("IP")
+    DEPLOYMENT_CLIENT_PROTOCOL = get_var("DEPLOYMENT_CLIENT_PROTOCOL")
+    DEPLOYMENT_CLIENT_HOSTNAME = get_var("DEPLOYMENT_CLIENT_HOSTNAME")
+    DEPLOYMENT_CLIENT_PORT = get_var("DEPLOYMENT_CLIENT_PORT")
+    DEPLOYMENT_CLIENT_VERSION = get_var("DEPLOYMENT_CLIENT_VERSION")
+    DEPLOYMENT_CLIENT_IP = get_var("DEPLOYMENT_CLIENT_IP")
+
     STATE = get_var("STATE")
     LOCATION = get_var("LOCATION")
     ENVIRONMENT = get_var("ENVIRONMENT")
     GROUP = get_var("GROUP")
-    URL = get_var("URL")
-    DEPLOYMENT_API_URI = get_var("DEPLOYMENT_API_URI")
-    DEPLOYMENT_PROXY = get_var("DEPLOYMENT_PROXY")
+
+    DEPLOYMENT_PROXY_PROTOCOL = get_var("DEPLOYMENT_PROXY_PROTOCOL")
+    DEPLOYMENT_PROXY_HOSTNAME = get_var("DEPLOYMENT_PROXY_HOSTNAME")
+    DEPLOYMENT_PROXY_PORT = get_var("DEPLOYMENT_PROXY_PORT")
+    DEPLOYMENT_PROXY_VERSION = get_var("DEPLOYMENT_PROXY_VERSION")
+    DEPLOYMENT_API_URI = f"{DEPLOYMENT_PROXY_PROTOCOL}://{DEPLOYMENT_PROXY_HOSTNAME}:{DEPLOYMENT_PROXY_PORT}/api/{DEPLOYMENT_PROXY_VERSION}"
+
     TOKEN = get_var("TOKEN")
     ENV_FILE = get_var("ENV_FILE")
     RETRY = get_var("RETRY")

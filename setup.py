@@ -27,6 +27,5 @@ setup(
         "flask",
         "gunicorn"
     ],
-    scripts=["dclient/dclient"],
     python_requires=">=3.6"
 )
