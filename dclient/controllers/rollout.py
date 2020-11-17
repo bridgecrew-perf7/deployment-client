@@ -7,7 +7,7 @@ from dclient.util.core import (
     get_yum_transaction_id,
     install_pkgs,
     restart_service,
-    get_installed,
+    not_installed,
 )
 
 
@@ -31,11 +31,19 @@ def post_rollout():
     data = request.get_json()
     app.logger.debug(f"POST ROLLOUT: {data}")
 
+<<<<<<< HEAD
     payload = {"hostname": Config.HOSTNAME, "state": "UPDATING"}
+=======
+    payload = {
+        "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+        "state": "UPDATING",
+    }
+>>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
     http = get_http()
     http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
     try:
+<<<<<<< HEAD
         for pkg in data["versionlock"]:
             stat = os.system(f"sudo yum versionlock add {pkg}")
             if stat != 0:
@@ -47,6 +55,19 @@ def post_rollout():
             data["versionlock"].append("mod_perl")
         install_pkgs(data["versionlock"])
 
+=======
+        if "versionlock" in data:
+            os.system("sudo yum versionlock clear")
+            if not_installed("httpd"):
+                install_pkgs(["httpd"])
+            if not_installed("mod_perl"):
+                install_pkgs(["mod_perl"])
+            install_pkgs(data["versionlock"])
+            for pkg in data["versionlock"]:
+                stat = os.system(f"sudo yum versionlock add {pkg}")
+                if stat != 0:
+                    raise Exception(stat)
+>>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
 
@@ -71,23 +92,32 @@ def post_rollout():
         headers = {"Authorization": Config.TOKEN}
         http = get_http()
         http.post(
-            f"{Config.DEPLOYMENT_API_URI}/server/history/{data['hostname']}",
+            f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.DEPLOYMENT_CLIENT_HOSTNAME}",
             headers=headers,
             json=payload,
         )
 
-        payload = {"hostname": data["hostname"], "state": "ACTIVE"}
+        payload = {
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "state": "ACTIVE",
+        }
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
         response = {
-            "hostname": Config.HOSTNAME,
+            "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "port": Config.DEPLOYMENT_CLIENT_PORT,
+            "version": Config.DEPLOYMENT_CLIENT_VERSION,
             "status": "SUCCESS",
             "message": "Rollout successfully executed.",
         }
         return response, 201
     except Exception as e:
-        payload = {"hostname": data["hostname"], "state": "ERROR"}
+        payload = {
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "state": "ERROR",
+        }
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
@@ -105,13 +135,16 @@ def post_rollout():
         headers = {"Authorization": Config.TOKEN}
         http = get_http()
         http.post(
-            f"{Config.DEPLOYMENT_API_URI}/server/history/{data['hostname']}",
+            f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.DEPLOYMENT_CLIENT_HOSTNAME}",
             headers=headers,
             json=payload,
         )
 
         response = {
-            "hostname": Config.HOSTNAME,
+            "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "port": Config.DEPLOYMENT_CLIENT_PORT,
+            "version": Config.DEPLOYMENT_CLIENT_VERSION,
             "status": "FAILED",
             "message": "Rollout failed.",
             "exception": str(e),

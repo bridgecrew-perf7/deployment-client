@@ -1,10 +1,13 @@
 from dclient.util.config import Config
 
+<<<<<<< HEAD
 import os
+=======
+>>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
 import re
-from flask import request
 from subprocess import check_output
 from flask import current_app as app
+<<<<<<< HEAD
 
 
 def post_versionlock():
@@ -32,35 +35,46 @@ def post_versionlock():
         }
         app.logger.debug(response)
         return response, 409
+=======
+>>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
 
 
 def get_versionlock():
     try:
-        app.logger.debug("Getting Versionlock")
-        app.logger.debug("check_output(['sudo', 'yum', 'versionlock', 'list'])")
+        app.logger.info("Getting Versionlock")
+        app.logger.info("check_output(['sudo', 'yum', 'versionlock', 'list'])")
         versionlock_list = []
-        versionlock = check_output(["sudo", "yum", "versionlock", "list"])
+        versionlock = check_output(["yum", "versionlock", "list"])
         versionlock = versionlock.splitlines()
         versionlock.pop(0)
         for vl in versionlock:
+            vl = vl.decode("utf-8")
             z = re.match("done", vl)
             if z:
                 break
             else:
+                app.logger.info(vl)
                 versionlock_list.append(vl)
         response = {
-            "hostname": Config.HOSTNAME,
+            "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "port": Config.DEPLOYMENT_CLIENT_PORT,
+            "version": Config.DEPLOYMENT_CLIENT_VERSION,
             "status": "SUCCESS",
             "message": "Versionlock list successfully retrieved",
             "versionlock": versionlock_list,
         }
         app.logger.debug(response)
         return response, 200
-    except:
+    except Exception as e:
         response = {
-            "hostname": Config.HOSTNAME,
+            "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
+            "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
+            "port": Config.DEPLOYMENT_CLIENT_PORT,
+            "version": Config.DEPLOYMENT_CLIENT_VERSION,
             "status": "FAILED",
             "message": "Failed to GET versionlock list",
+            "exception": str(e)
         }
         app.logger.debug(response)
         return response, 409

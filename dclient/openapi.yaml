@@ -55,10 +55,17 @@ paths:
           description: successful operation
   /update:
     post:
+<<<<<<< HEAD
       summary: issue an update
       operationId: dclient.controllers.update.post_update
       requestBody:
         description: Update a Server
+=======
+      summary: create an update
+      operationId: dclient.controllers.update.post_update
+      requestBody:
+        description: Create an update object
+>>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
         content:
           application/json:
             schema:
@@ -68,17 +75,11 @@ paths:
         default:
           description: successful operation
   /versionlock:
-    post:
-      summary: create a versionlock
-      operationId: dclient.controllers.versionlock.post_versionlock
-      requestBody:
-        description: Create Versionlock object
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/VersionLock'
-        required: true
+    get:
+      summary: get versionlock list
+      operationId: dclient.controllers.versionlock.get_versionlock
       responses:
+<<<<<<< HEAD
         default:
           description: successful operation
     get:
@@ -87,6 +88,10 @@ paths:
       responses:
         "200":
           description: get server's versionlock data
+=======
+        "200":
+          description: get versionlock list
+>>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
           content:
             application/json:
               schema:

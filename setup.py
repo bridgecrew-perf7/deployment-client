@@ -6,7 +6,11 @@ with open("README.md", "r") as fh:
 
 setup(
     name="dclient",
+<<<<<<< HEAD
     version="0.1.79",
+=======
+    version="0.2.2",
+>>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
     author="Jacob Bushman",
     author_email="jacob.matthew.bushman@endurance.com",
     description="Deployment Client API",
