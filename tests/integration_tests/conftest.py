@@ -4,7 +4,7 @@ import requests
 
 @pytest.fixture(scope="module")
 def base_url():
-    url = 'http://www-test.unifiedlayer.com:8003'
+    url = 'http://deployment-client.com:8003'
     return url
 
 
