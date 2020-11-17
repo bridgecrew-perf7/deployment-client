@@ -1,0 +1,18 @@
+[Unit]
+Description=Bluehost Deployment Client service
+After=network.target
+
+[Service]
+User=deployment
+Group=deployment
+EnvironmentFile=/etc/default/dclient
+RuntimeDirectory=dclient
+WorkingDirectory=/opt/deployment/client
+ExecStart=/usr/local/bin/gunicorn -b 0.0.0.0:8003 --log-level=INFO --workers=1 --timeout=90 'dclient.app:app'
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
