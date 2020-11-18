@@ -1,42 +1,8 @@
 from dclient.util.config import Config
 
-<<<<<<< HEAD
-import os
-=======
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
 import re
 from subprocess import check_output
 from flask import current_app as app
-<<<<<<< HEAD
-
-
-def post_versionlock():
-    data = request.get_json()
-    app.logger.debug(f"POST VERSIONLOCK: {data}")
-    try:
-        app.logger.info("Updating Versionlock")
-        for pkg in data["versionlock"]:
-            app.logger.debug(f"sudo yum versionlock add {pkg}")
-            stat = os.system(f"sudo yum versionlock add {pkg}")
-            if stat != 0:
-                raise Exception(stat)
-        response = {
-            "hostname": Config.HOSTNAME,
-            "status": "SUCCESS",
-            "message": "New versionlock list successfully created.",
-        }
-        app.logger.debug(response)
-        return response, 201
-    except:
-        response = {
-            "hostname": Config.HOSTNAME,
-            "status": "FAILED",
-            "message": "POST versionlock list failed.",
-        }
-        app.logger.debug(response)
-        return response, 409
-=======
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
 
 
 def get_versionlock():

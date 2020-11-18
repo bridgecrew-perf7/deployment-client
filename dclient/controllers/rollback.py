@@ -28,17 +28,11 @@ def post_rollback():
     """
 
     data = request.get_json()
-<<<<<<< HEAD
-    app.logger.debug(data)
-    headers = {"Authorization": Config.TOKEN}
-    payload = {"hostname": Config.HOSTNAME, "state": "UPDATING"}
-=======
     app.logger.info(data)
     payload = {
         "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
         "state": "UPDATING",
     }
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
     http = get_http()
     http.patch(f"{Config.DEPLOYMENT_API_URI}/server", headers=headers, json=payload)
 
@@ -73,14 +67,10 @@ def post_rollback():
             json=payload,
         )
 
-<<<<<<< HEAD
-        payload = {"hostname": Config.HOSTNAME, "state": "ACTIVE"}
-=======
         payload = {
             "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
             "state": "ACTIVE",
         }
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
@@ -96,15 +86,10 @@ def post_rollback():
         }
         return response, 201
     except Exception as e:
-<<<<<<< HEAD
-        headers = {"Authorization": Config.TOKEN}
-        payload = {"hostname": Config.HOSTNAME, "state": "ERROR"}
-=======
         payload = {
             "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
             "state": "ERROR",
         }
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
         http = get_http()
         http.patch(f"{Config.DEPLOYMENT_API_URI}/server", headers=headers, json=payload)
 
@@ -112,27 +97,15 @@ def post_rollback():
         yum_rollback_id = yum_transaction_id - 1
 
         payload = {
-<<<<<<< HEAD
-            "server_id": Config.SERVER_ID,
-            "deployment_id": data["deployment_id"],
-            "action": "Updating RPMs",
-            "state": "FAILURE",
-=======
             "deployment_id": int(data["deployment_id"]),
             "action": "Update",
             "state": "FAILED",
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
             "yum_transaction_id": yum_transaction_id,
             "yum_rollback_id": yum_rollback_id,
         }
         http = get_http()
         http.post(
-<<<<<<< HEAD
-            f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.HOSTNAME}",
-            headers=headers,
-=======
             f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.DEPLOYMENT_CLIENT_HOSTNAME}",
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
             json=payload,
         )
 

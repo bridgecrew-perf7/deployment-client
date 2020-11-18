@@ -1,9 +1,6 @@
 from dclient.util.config import Config, get_var
 from dclient.util.http_helper import get_http
-<<<<<<< HEAD
 
-=======
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
 import os
 import re
 from dotenv import load_dotenv
@@ -14,10 +11,6 @@ from flask import current_app as app
 
 load_dotenv("/etc/default/dclient")
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
 
 class LastUpdated(OrderedDict):
     def __setitem__(self, key, value):
@@ -25,20 +18,10 @@ class LastUpdated(OrderedDict):
         self.move_to_end(key)
 
 
-<<<<<<< HEAD
-def get_installed(rpm):
-    app.logger.info(f"running check_output(['rpm', '-q', {rpm}])")
-    package = check_output(["rpm", "-q", rpm])
-    z = re.match("not installed", package)
-    if z:
-        return False
-    else:
-=======
 def not_installed(rpm):
     app.logger.debug(f"running rpm -q {rpm}")
     stat = os.system(f"rpm -q {rpm}")
     if stat == 1:
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
         return True
     else:
         return False
@@ -89,20 +72,6 @@ def update_env(key, value):
     :return: True or False
     """
     try:
-<<<<<<< HEAD
-        os.environ[key] = value
-        env = LastUpdated()
-        with open(Config.ENV_FILE) as f:
-            for line in f:
-                try:
-                    (k, v) = line.split("=", 1)
-                    env[k] = v
-                except:
-                    pass
-        env[key] = value
-
-        with open(Config.ENV_FILE, "w") as f:
-=======
         env = LastUpdated()
         with open("/etc/default/dclient") as f:
             for line in f:
@@ -115,22 +84,14 @@ def update_env(key, value):
 
     try:
         with open("/etc/default/dclient", "w") as f:
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
             for k in env.keys():
                 line = f"{k}={env[k]}"
                 if "\n" in line:
                     f.write(line)
                 else:
                     f.write(line + "\n")
-<<<<<<< HEAD
-        return True
-    except Exception as e:
-        app.logger.error(f"Update Environment Failed: {e}")
-        return False
-=======
     except:
         raise Exception("Unable to update dclient environment file.")
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
 
 
 def set_state(state):
@@ -139,22 +100,6 @@ def set_state(state):
     :param: state enum[NEW ACTIVE UPDATING ERROR DISABLED]
     :return: True or False
     """
-<<<<<<< HEAD
-    try:
-        data = {"hostname": get_var("HOSTNAME"), "state": state}
-        http = get_http()
-        r = http.patch(
-            f"{Config.DEPLOYMENT_API_URI}/server",
-            json=data,
-        )
-        resp = r.json()
-        app.logger.debug(f"Updated Proxy: {resp} {r.status_code}")
-        update_env("STATE", state)
-        os.environ["STATE"] = state
-        return True
-    except Exception as e:
-        app.logger.error(f"SET STATE FAILED: {e}")
-=======
     data = {
         "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
         "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
@@ -169,7 +114,6 @@ def set_state(state):
         return True
     else:
         app.logger.error(f"Failed to set state: {state}")
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
         return False
 
 
@@ -180,19 +124,11 @@ def register_dclient():
 
     data = {
         "created_by": "dclient",
-<<<<<<< HEAD
-        "hostname": get_var("HOSTNAME"),
-        "ip": get_var("IP"),
-        "port": get_var("PORT"),
-        "protocol": get_var("PROTOCOL"),
-        "version": get_var("VERSION"),
-=======
         "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
         "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
         "port": Config.DEPLOYMENT_CLIENT_PORT,
         "version": Config.DEPLOYMENT_CLIENT_VERSION,
         "ip": Config.DEPLOYMENT_CLIENT_IP,
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
         "state": "ACTIVE",
         "group": Config.GROUP,
         "environment": Config.ENVIRONMENT,
@@ -203,11 +139,6 @@ def register_dclient():
     r = http.post(f"{Config.DEPLOYMENT_API_URI}/register", json=data)
     resp = r.json()
     app.logger.debug(f"REGISTER CLIENT: {resp}")
-<<<<<<< HEAD
-    if "server" in resp:
-        update_env("SERVER_ID", resp["server"]["id"])
-=======
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
     if "token" in resp:
         update_env("TOKEN", resp["token"])
         set_state("ACTIVE")

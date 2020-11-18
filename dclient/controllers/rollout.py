@@ -31,31 +31,14 @@ def post_rollout():
     data = request.get_json()
     app.logger.debug(f"POST ROLLOUT: {data}")
 
-<<<<<<< HEAD
-    payload = {"hostname": Config.HOSTNAME, "state": "UPDATING"}
-=======
     payload = {
         "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
         "state": "UPDATING",
     }
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
     http = get_http()
     http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
     try:
-<<<<<<< HEAD
-        for pkg in data["versionlock"]:
-            stat = os.system(f"sudo yum versionlock add {pkg}")
-            if stat != 0:
-                raise Exception(stat)
-
-        if not get_installed("httpd"):
-            data["versionlock"].append("httpd")
-        if not get_installed("mod_perl"):
-            data["versionlock"].append("mod_perl")
-        install_pkgs(data["versionlock"])
-
-=======
         if "versionlock" in data:
             os.system("sudo yum versionlock clear")
             if not_installed("httpd"):
@@ -67,7 +50,6 @@ def post_rollout():
                 stat = os.system(f"sudo yum versionlock add {pkg}")
                 if stat != 0:
                     raise Exception(stat)
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
 
