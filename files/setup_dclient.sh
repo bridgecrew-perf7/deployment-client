@@ -17,6 +17,17 @@ index-url = https://pypi.unifiedlayer.com/root/stable/
 index = https://pypi.unifiedlayer.com/root/stable/
 EOM
 
+#Add custom.repo
+cat > /etc/yum.repos.d/custom.repo <<-EOM
+[Alpha]
+name=Alpha repo
+baseurl=http://mirrors.unifiedlayer.com/alpha/centos$releasever
+gpgkey=http://mirrors.unifiedlayer.com/alpha/RPM-GPG-KEY-Alpha
+enabled=0
+gpgcheck=1
+timeout=5
+EOM
+
 printf "$(hostname -I) $HOSTNAME" >> /etc/hosts
 
 username="hp_deploy"
