@@ -18,7 +18,7 @@ def test_post_rollout(base_url):
 def test_post_rollback(base_url):
     data = {
         "deployment_id": 1,
-        "yum_rollback_id": 14,
+        "yum_rollback_id": 41,
         "versionlock": [
             "eig-hp-core_lib-20200527-1.5299e2c.el7.noarch",
             "eig-hp-hp_common-20200527-1.bfc6a82.el7.noarch",
