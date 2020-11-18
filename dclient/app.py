@@ -1,13 +1,5 @@
-<<<<<<< HEAD
-from dclient.util.config import Config
-from dclient.util.core import set_state, register_dclient
-
-import os
-import connexion
-=======
 #!/usr/bin/python3
 from dclient.util.config import Config
-from dclient.controllers.update import post_update
 from dclient.controllers.rollout import post_rollout
 from dclient.controllers.rollback import post_rollback
 from dclient.util.core import set_state, register_dclient
@@ -15,7 +7,6 @@ from dclient.controllers.healthcheck import get_healthcheck
 from dclient.controllers.versionlock import get_versionlock
 
 from flask import Flask, request
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
 
 import logging.handlers
 
@@ -27,17 +18,6 @@ rotating_log_handeler.setFormatter(formatter)
 rotating_log_handeler.setLevel(logging.DEBUG)
 logging.getLogger('').addHandler(rotating_log_handeler)
 
-<<<<<<< HEAD
-flask_app = connexion.FlaskApp(__name__)
-flask_app.add_api("openapi.yaml", validate_responses=True, strict_validation=True)
-app = flask_app.app
-app.config.from_object(Config)
-with app.app_context():
-    if not os.getenv("TOKEN"):
-        register_dclient()
-    else:
-        set_state("ACTIVE")
-=======
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -52,11 +32,6 @@ with app.app_context():
     def healthcheck():
         if request.method == "GET":
             return get_healthcheck()
-
-    @app.route("/update", methods=["POST"])
-    def update():
-        if request.method == "POST":
-            return post_update()
 
     @app.route("/rollout", methods=["POST"])
     def rollout():
@@ -74,4 +49,3 @@ with app.app_context():
             return post_versionlock()
         elif request.method == "GET":
             return get_versionlock()
->>>>>>> 8163e4905e6bab0d330c90f6ae74b6191c9d55ac
