@@ -1,0 +1,7 @@
+[Production]
+name=Production repo
+baseurl=http://mirrors.unifiedlayer.com/production/centos$releasever
+gpgkey=http://mirrors.unifiedlayer.com/production/RPM-GPG-KEY-Production
+enabled=0
+gpgcheck=1
+timeout=5
