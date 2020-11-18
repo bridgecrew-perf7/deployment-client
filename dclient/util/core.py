@@ -52,8 +52,8 @@ def install_pkgs(packages):
     packages = " ".join(map(str, packages))
     app.logger.info("running os.system('sudo yum clean all')")
     os.system("sudo yum clean all")
-    app.logger.info(f"running sudo yum --enablerepo=Production -y install {packages}")
-    stat = os.system(f"sudo yum --enablerepo=Production -y install {packages}")
+    app.logger.info(f"running sudo yum --enablerepo={Config.ENVIRONMENT} -y install {packages}")
+    stat = os.system(f"sudo yum --enablerepo={Config.ENVIRONMENT} -y install {packages}")
     if stat != 0:
         raise Exception(stat)
 

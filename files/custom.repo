@@ -5,3 +5,11 @@ gpgkey=http://mirrors.unifiedlayer.com/production/RPM-GPG-KEY-Production
 enabled=0
 gpgcheck=1
 timeout=5
+
+[Alpha]
+name=Alpha repo
+baseurl=http://mirrors.unifiedlayer.com/alpha/centos$releasever
+gpgkey=http://mirrors.unifiedlayer.com/alpha/RPM-GPG-KEY-Alpha
+enabled=0
+gpgcheck=1
+timeout=5
