@@ -53,7 +53,7 @@ def post_rollout():
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
 
-        if data["buildall"]:
+        if "buildall" in data:
             stat = os.system("sudo /var/hp/common/bin/buildall -s")
             if stat != 0:
                 raise Exception(stat)

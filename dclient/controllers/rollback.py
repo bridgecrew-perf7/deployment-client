@@ -44,7 +44,7 @@ def post_rollback():
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
 
-        if data["buildall"]:
+        if "buildall" in data:
             os.system("sudo /var/hp/common/bin/buildall -s")
 
         restart_service("httpd.service")
