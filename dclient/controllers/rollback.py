@@ -34,7 +34,7 @@ def post_rollback():
         "state": "UPDATING",
     }
     http = get_http()
-    http.patch(f"{Config.DEPLOYMENT_API_URI}/server", headers=headers, json=payload)
+    http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
     try:
         os.system(f"yum -y history rollback {data['yum_rollback_id']}")
@@ -60,6 +60,7 @@ def post_rollback():
             "yum_transaction_id": yum_transaction_id,
             "yum_rollback_id": yum_rollback_id,
         }
+        headers = {"Authorization": Config.TOKEN}
         http = get_http()
         http.post(
             f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.DEPLOYMENT_CLIENT_HOSTNAME}",
@@ -91,7 +92,7 @@ def post_rollback():
             "state": "ERROR",
         }
         http = get_http()
-        http.patch(f"{Config.DEPLOYMENT_API_URI}/server", headers=headers, json=payload)
+        http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
@@ -103,9 +104,11 @@ def post_rollback():
             "yum_transaction_id": yum_transaction_id,
             "yum_rollback_id": yum_rollback_id,
         }
+        headers = {"Authorization": Config.TOKEN}
         http = get_http()
         http.post(
             f"{Config.DEPLOYMENT_API_URI}/server/history/{Config.DEPLOYMENT_CLIENT_HOSTNAME}",
+            headers=headers,
             json=payload,
         )
 

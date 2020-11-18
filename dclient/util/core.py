@@ -1,4 +1,4 @@
-from dclient.util.config import Config, get_var
+from dclient.util.config import Config
 from dclient.util.http_helper import get_http
 
 import os
@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 from collections import OrderedDict
 from flask import current_app as app
 from subprocess import Popen, check_output
-from flask import current_app as app
 
 load_dotenv("/etc/default/dclient")
 
