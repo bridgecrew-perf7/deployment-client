@@ -37,7 +37,7 @@ def post_rollback():
     http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=payload)
 
     try:
-        os.system(f"yum -y history rollback {data['yum_rollback_id']}")
+        os.system(f"sudo yum -y history rollback {data['yum_rollback_id']}")
         if "versionlock" in data:
             for pkg in data["versionlock"]:
                 os.system(f"sudo yum versionlock add {pkg}")
