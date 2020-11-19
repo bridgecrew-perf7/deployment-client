@@ -55,6 +55,7 @@ def get_var(var):
 
 
 class Config(object):
+    SERVER_ID = get_var("SERVER_ID")
     DEPLOYMENT_CLIENT_PROTOCOL = get_var("DEPLOYMENT_CLIENT_PROTOCOL")
     DEPLOYMENT_CLIENT_HOSTNAME = get_var("DEPLOYMENT_CLIENT_HOSTNAME")
     DEPLOYMENT_CLIENT_PORT = get_var("DEPLOYMENT_CLIENT_PORT")
@@ -79,6 +80,7 @@ class Config(object):
     STATUS_FORCELIST = get_var("STATUS_FORCELIST")
     METHOD_WHITELIST = get_var("METHOD_WHITELIST")
     DEFAULT_TIMEOUT = get_var("DEFAULT_TIMEOUT")
+    LOG_LEVEL = get_var("LOG_LEVEL")
     LOG_FILE = get_var("LOG_FILE")
     LOG_MAX_BYTES = get_var("LOG_MAX_BYTES")
     LOG_BACKUP_COUNT = get_var("LOG_BACKUP_COUNT")

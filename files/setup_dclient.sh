@@ -5,6 +5,8 @@ mode=$1
 #set up services
 yum -y install epel-release
 yum -y install perl python3 python-pip
+yum -y install https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+yum -y install yum-plugin-versionlock
 
 #Overwrite /etc/pip.conf
 cat > /etc/pip.conf <<-EOM
@@ -15,9 +17,20 @@ index-url = https://pypi.unifiedlayer.com/root/stable/
 index = https://pypi.unifiedlayer.com/root/stable/
 EOM
 
+#Add custom.repo
+cat > /etc/yum.repos.d/custom.repo <<-EOM
+[Alpha]
+name=Alpha repo
+baseurl=http://mirrors.unifiedlayer.com/alpha/centos$releasever
+gpgkey=http://mirrors.unifiedlayer.com/alpha/RPM-GPG-KEY-Alpha
+enabled=0
+gpgcheck=1
+timeout=5
+EOM
+
 printf "$(hostname -I) $HOSTNAME" >> /etc/hosts
 
-username="deployment"
+username="hp_deploy"
 
 #Create hp_deploy user
 if [ $(id -u) -eq 0 ]; then
@@ -26,21 +39,21 @@ if [ $(id -u) -eq 0 ]; then
 	if [ $? -eq 0 ]; then
 		echo "$username exists!"
 	else
-		echo "Creating deployment user"
+		echo "Creating hp_deploy user"
 		pass=$(perl -e 'print crypt($ARGV[0], "password")' $password)
 		useradd -m -G wheel -d /opt/deployment -p "$pass" "$username"
 		[ $? -eq 0 ] && echo "User has been added to system!" || echo "Failed to add a user!"
-		sudoer_string="deployment ALL=(ALL) NOPASSWD: /bin/yum, /var/hp/common/bin/buildall"
-		if echo /etc/sudoers | grep -q "deployment"
+		sudoer_string="hp_deploy ALL=(ALL) NOPASSWD: /bin/yum, /var/hp/common/bin/buildall"
+		if echo /etc/sudoers | grep -q "hp_deploy"
 		then
 			echo "Sudoers file already modified"
 		else
-			echo "deployment ALL=(ALL) NOPASSWD: /bin/yum, /var/hp/common/bin/buildall" >> /etc/sudoers
+			echo "hp_deploy ALL=(ALL) NOPASSWD: /bin/yum, /var/hp/common/bin/buildall" >> /etc/sudoers
 		fi
 		
-		echo "deployment ALL=(ALL) NOPASSWD: /bin/yum, /var/hp/common/bin/buildall" >> /etc/sudoers
+		echo "hp_deploy ALL=(ALL) NOPASSWD: /bin/yum, /var/hp/common/bin/buildall" >> /etc/sudoers
 		mkdir -p /var/log/deployment
-		chown deployment:deployment -R /var/log/deployment
+		chown hp_deploy:hp_deploy -R /var/log/deployment
 	fi
 else
 	echo "Only root may add a user to the system."
@@ -48,7 +61,7 @@ else
 fi
 
 
-environment="PRODUCTION"
+environment="Alpha"
 
 if [[ $mode == *"dev"* ]]
 then
@@ -60,7 +73,7 @@ then
 		#Install dclient
 		pip3 install dclient
 	fi
-	environment="DEVELOPMENT"
+	environment="Alpha"
 else
 	echo "RPM install not implemented"
 	#install dclient rpm
@@ -113,25 +126,30 @@ cat > /etc/deployment/dclient.conf <<- EOM
 
 # hostname to use for the deployment-proxy
 # must be resolveable and reachable from the deployment-api and deployment-clients
-DEPLOYMENT_CLIENT_PROTOCOL=http
 DEPLOYMENT_CLIENT_HOSTNAME=www0.hp.provo1.endurancemb.com
+DEPLOYMENT_CLIENT_IP=10.24.244.27
+DEPLOYMENT_CLIENT_PROTOCOL=http
 DEPLOYMENT_CLIENT_PORT=8003
 DEPLOYMENT_CLIENT_VERSION=v1
-DEPLOYMENT_CLIENT_IP=10.24.244.27
 
-
-# api endpoint url for the deployment-proxy
-# running on port 8002
-# api version v1
-DEPLOYMENT_PROXY_PROTOCOL=http
-DEPLOYMENT_PROXY_HOSTNAME=deploy-proxy.hp.provo1.endurancemb.com
-DEPLOYMENT_PROXY_PORT=8002
-DEPLOYMENT_PROXY_VERSION=v1
-
-#Deployment-client specifications
+# group or cluster this server belongs to
 GROUP=hp_web
-ENVIRONMENT=$environment
-LOCATION=PROVO
+
+# environment this server belongs to
+# Example: Alpha, Beta, Staging, Production
+ENVIRONMENT=Alpha
+
+# which datacenter is this server located in
+LOCATION=Provo
+
+# deployment-proxy hostname
+DEPLOYMENT_PROXY_HOSTNAME=deploy-proxy.hp.provo1.endurancemb.com
+# running on port 8002
+DEPLOYMENT_PROXY_PORT=8002
+# deployment proxy protocol (http/https)
+DEPLOYMENT_PROXY_PROTOCOL=http
+# api version v1
+DEPLOYMENT_PROXY_VERSION=v1
 
 # the environment file to load environment variables from.
 # default /etc/default/dclient
@@ -152,9 +170,12 @@ STATUS_FORCELIST=[429, 500, 502, 503, 504]
 METHOD_WHITELIST=["HEAD", "GET", "OPTIONS", "TRACE", "DELETE", "PUT", "PATCH", "POST"]
 # default timeout in seconds
 DEFAULT_TIMEOUT=30
-
-# Logging
 # default log file name
+
+# LOG CONFIGURATION
+# set log level
+LOG_LEVEL=INFO
+# set log file
 LOG_FILE=/var/log/deployment/dclient.log
 # max file size before roll
 LOG_MAX_BYTES=1000000

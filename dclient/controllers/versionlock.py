@@ -30,6 +30,7 @@ def get_versionlock():
             "message": "Versionlock list successfully retrieved",
             "versionlock": versionlock_list,
         }
+        app.logger.debug(response)
         return response, 200
     except Exception as e:
         response = {
@@ -41,4 +42,5 @@ def get_versionlock():
             "message": "Failed to GET versionlock list",
             "exception": str(e)
         }
+        app.logger.debug(response)
         return response, 409

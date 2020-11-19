@@ -1,5 +1,6 @@
 import os
 from flask import request
+from flask import current_app as app
 from dclient.util.config import Config
 from dclient.util.http_helper import get_http
 from dclient.util.core import (
@@ -11,7 +12,24 @@ from dclient.util.core import (
 
 
 def post_rollout():
+    """Post Rollout Operation
+
+    post data:
+        buildall: whether to run buildall with this operation or not
+          type: boolean
+          default: False
+        deployment_id: the deployment_id for the deployment that issued this operation
+          type: integer
+          example: 1
+        versionlock: an array of RPM packages to install / update
+          type: array
+          example: ["httpd-2.4.6-93.el7.centos.x86_64", "mod_perl-2.0.11-1.el7.x86_64"]
+
+    :return: response
+    """
+
     data = request.get_json()
+    app.logger.debug(f"POST ROLLOUT: {data}")
 
     payload = {
         "hostname": Config.DEPLOYMENT_CLIENT_HOSTNAME,
@@ -34,10 +52,12 @@ def post_rollout():
                     raise Exception(stat)
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
+
         if "buildall" in data:
             stat = os.system("sudo /var/hp/common/bin/buildall -s")
             if stat != 0:
                 raise Exception(stat)
+
         restart_service("httpd.service")
         stat = os.system("systemctl status httpd.service")
         if stat != 0:
@@ -45,7 +65,7 @@ def post_rollout():
 
         payload = {
             "deployment_id": int(data["deployment_id"]),
-            "action": "Update",
+            "action": "UPDATE",
             "state": "SUCCESS",
             "output": "deployment was successful",
             "yum_transaction_id": yum_transaction_id,
@@ -85,7 +105,9 @@ def post_rollout():
 
         yum_transaction_id = get_yum_transaction_id()
         yum_rollback_id = yum_transaction_id - 1
+
         payload = {
+            "server_id": Config.SERVER_ID,
             "deployment_id": int(data["deployment_id"]),
             "action": "Update",
             "state": "FAILED",
@@ -106,7 +128,7 @@ def post_rollout():
             "port": Config.DEPLOYMENT_CLIENT_PORT,
             "version": Config.DEPLOYMENT_CLIENT_VERSION,
             "status": "FAILED",
-            "message": "POST rollout failed.",
+            "message": "Rollout failed.",
             "exception": str(e),
         }
         return response, 409

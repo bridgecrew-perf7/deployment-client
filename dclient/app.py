@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 from dclient.util.config import Config
-from dclient.controllers.update import post_update
 from dclient.controllers.rollout import post_rollout
 from dclient.controllers.rollback import post_rollback
 from dclient.util.core import set_state, register_dclient
@@ -33,11 +32,6 @@ with app.app_context():
     def healthcheck():
         if request.method == "GET":
             return get_healthcheck()
-
-    @app.route("/update", methods=["POST"])
-    def update():
-        if request.method == "POST":
-            return post_update()
 
     @app.route("/rollout", methods=["POST"])
     def rollout():

@@ -53,20 +53,6 @@ paths:
       responses:
         default:
           description: successful operation
-  /update:
-    post:
-      summary: create an update
-      operationId: dclient.controllers.update.post_update
-      requestBody:
-        description: Create an update object
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Update'
-        required: true
-      responses:
-        default:
-          description: successful operation
   /versionlock:
     get:
       summary: get versionlock list
@@ -97,42 +83,39 @@ components:
     RollOut:
       type: object
       properties:
-        server_id:
-          type: integer
-          example: 1
+        buildall:
+          type: boolean
+          default: False
         deployment_id:
           type: integer
           example: 1
-        action:
-          type: string
-          example: UPDATE
-        output:
-          type: string
-          example: deployment was successful
-        yum_transaction_id:
-          type: integer
-          example: 1
-        yum_rollback_id:
-          type: integer
-          example: 1
+        versionlock:
+          type: array
+          example: ["httpd-2.4.6-93.el7.centos.x86_64", "mod_perl-2.0.11-1.el7.x86_64"]
     RollBack:
       type: object
       properties:
-        server_id:
-          type: integer
-          example: 1
+        buildall:
+          type: boolean
+          default: False
         deployment_id:
           type: integer
           example: 1
-        action:
+        versionlock:
+          type: array
+          example: ["httpd-2.4.6-93.el7.centos.x86_64", "mod_perl-2.0.11-1.el7.x86_64"]
+    Update:
+      type: object
+      properties:
+        packages:
+          type: array
+          example: ["dclient"]
+    VersionLock:
+      type: object
+      properties:
+        hostname:
           type: string
-          example: UPDATE
-        output:
-          type: string
-          example: deployment was successful
-        yum_transaction_id:
-          type: integer
-          example: 1
-        yum_rollback_id:
-          type: integer
-          example: 1
+          example: www0.hp.provo1.endurancemb.com
+        versionlock:
+          type: array
+          example: ["httpd-2.4.6-93.el7.centos.x86_64", "mod_perl-2.0.11-1.el7.x86_64"]

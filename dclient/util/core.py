@@ -1,14 +1,14 @@
-from dclient.util.config import Config, get_var
+from dclient.util.config import Config
 from dclient.util.http_helper import get_http
+
 import os
 import re
 from dotenv import load_dotenv
 from collections import OrderedDict
-from subprocess import Popen, check_output
 from flask import current_app as app
+from subprocess import Popen, check_output
 
 load_dotenv("/etc/default/dclient")
-
 
 
 class LastUpdated(OrderedDict):
@@ -52,8 +52,8 @@ def install_pkgs(packages):
     packages = " ".join(map(str, packages))
     app.logger.info("running os.system('sudo yum clean all')")
     os.system("sudo yum clean all")
-    app.logger.info(f"running sudo yum --enablerepo=Production -y install {packages}")
-    stat = os.system(f"sudo yum --enablerepo=Production -y install {packages}")
+    app.logger.info(f"running sudo yum --enablerepo={Config.ENVIRONMENT} -y install {packages}")
+    stat = os.system(f"sudo yum --enablerepo={Config.ENVIRONMENT} -y install {packages}")
     if stat != 0:
         raise Exception(stat)
 
@@ -65,10 +65,10 @@ def restart_service(service):
 
 def update_env(key, value):
     """
-    Update environment variables and store environment file
-    :param key:
-    :param value:
-    :return:
+    Set a key value pair in the environment file and export to the os
+    :param: key string
+    :param: value string
+    :return: True or False
     """
     try:
         env = LastUpdated()
@@ -95,9 +95,9 @@ def update_env(key, value):
 
 def set_state(state):
     """
-    Set the dclient state to the correct state.
-    Keep the state in sync with Deployment-api
-    :return:
+    Set the dclient state in the environment and the deployment-api to the correct state.
+    :param: state enum[NEW ACTIVE UPDATING ERROR DISABLED]
+    :return: True or False
     """
     data = {
         "protocol": Config.DEPLOYMENT_CLIENT_PROTOCOL,
@@ -117,8 +117,7 @@ def set_state(state):
 
 
 def register_dclient():
-    """
-    Register dclient and fetch token
+    """Register dclient and fetch token
     :return:
     """
 
