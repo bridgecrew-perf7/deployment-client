@@ -6,8 +6,8 @@ from dclient.util.core import set_state, register_dclient
 from dclient.controllers.healthcheck import get_healthcheck
 from dclient.controllers.versionlock import get_versionlock
 
-import gunicorn.app.base
 from flask import Flask, request
+from gunicorn.app.wsgiapp import WSGIApplication
 
 import logging.handlers
 
@@ -20,12 +20,11 @@ rotating_log_handeler.setLevel(logging.DEBUG)
 logging.getLogger('').addHandler(rotating_log_handeler)
 
 
-class StandaloneApplication(gunicorn.app.base.BaseApplication):
-
+class DClient(WSGIApplication):
     def __init__(self, app, options=None):
         self.options = options or {}
         self.application = app
-        super().__init__()
+        super(WSGIApplication, self).__init__()
 
     def load_config(self):
         config = {key: value for key, value in self.options.items()
@@ -38,38 +37,54 @@ class StandaloneApplication(gunicorn.app.base.BaseApplication):
 
 
 def create_app():
+    """ Create the dclient app
+
+    :return: app
+    """
+
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    if not Config.TOKEN:
-        register_dclient()
-    else:
-        set_state("ACTIVE")
+    with app.app_context():
+        if not Config.TOKEN:
+            register_dclient()
+        else:
+            set_state("ACTIVE")
 
-    @app.route("/", methods=["GET"])
-    def healthcheck():
-        if request.method == "GET":
-            return get_healthcheck()
+        @app.route("/", methods=["GET"])
+        def healthcheck():
+            if request.method == "GET":
+                return get_healthcheck()
 
-    @app.route("/rollout", methods=["POST"])
-    def rollout():
-        if request.method == "POST":
-            return post_rollout()
+        @app.route("/rollout", methods=["POST"])
+        def rollout():
+            if request.method == "POST":
+                return post_rollout()
 
-    @app.route("/rollback", methods=["POST"])
-    def rollback():
-        if request.method == "POST":
-            return post_rollback()
+        @app.route("/rollback", methods=["POST"])
+        def rollback():
+            if request.method == "POST":
+                return post_rollback()
 
-    @app.route("/versionlock", methods=["GET"])
-    def versionlock():
-        if request.method == "GET":
-            return get_versionlock()
+        @app.route("/versionlock", methods=["GET", "POST"])
+        def versionlock():
+            if request.method == "GET":
+                return get_versionlock()
+
+    return app
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     options = {
-        'bind': '%s:%s' % ('0.0.0.0', '8003'),
-        'workers': 1,
+        "bind": "%s:%s" % ("0.0.0.0", "8003"),
+        "workers": 1,
+        "reload-engine": "auto",
+        "spew": False,
+        "access-logformat": "%(h)s %(l)s %(u)s %(t)s '%(r)s' %(s)s %(b)s '%(f)s' '%(a)s'",
+        "disable-redirect-access-to-syslog": False,
+        "log-level": "debug",
+        "capture-output": True,
+        "worker_class": "sync",
+        "timeout": 600
     }
-    StandaloneApplication(create_app, options).run()
+    DClient(create_app(), options).run()
