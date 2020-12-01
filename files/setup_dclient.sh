@@ -2,6 +2,12 @@
 
 mode=$1
 
+if [ -z "$mode" ]
+then
+	echo "Mode not set. Defaulting to dev."
+	mode="dev"
+fi
+
 #set up services
 yum -y install epel-release
 yum -y install perl python3 python-pip
