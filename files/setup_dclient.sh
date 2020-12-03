@@ -26,13 +26,15 @@ EOM
 #Add custom.repo
 cat > /etc/yum.repos.d/custom.repo <<-EOM
 [Alpha]
-name=Alpha repo
+name=Alpha
 baseurl=http://mirrors.unifiedlayer.com/alpha/centos$releasever
 gpgkey=http://mirrors.unifiedlayer.com/alpha/RPM-GPG-KEY-Alpha
 enabled=0
 gpgcheck=1
 timeout=5
 EOM
+
+hostnamectl set-hostname deployment-client.com
 
 printf "$(hostname -I) $HOSTNAME" >> /etc/hosts
 
