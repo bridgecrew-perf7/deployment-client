@@ -6,8 +6,8 @@ from dclient.util.core import set_state, register_dclient
 from dclient.controllers.healthcheck import get_healthcheck
 from dclient.controllers.versionlock import get_versionlock
 
-import gunicorn
 from flask import Flask, request
+from gunicorn.app.wsgiapp import WSGIApplication
 
 import logging.handlers
 
@@ -20,7 +20,7 @@ rotating_log_handeler.setLevel(logging.DEBUG)
 logging.getLogger('').addHandler(rotating_log_handeler)
 
 
-class DClient(gunicorn.app.wsgiapp.WSGIApplication):
+class DClient(WSGIApplication):
     def __init__(self, app, options=None):
         self.options = options or {}
         self.application = app
