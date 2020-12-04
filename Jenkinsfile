@@ -15,7 +15,7 @@ pipeline {
                 sh 'pipenv check'
                 sh 'pipenv run black *.py'
                 sh 'pipenv run flake8'
-                sh 'safety check'
+                sh 'pipenv run safety check'
             }
         }
     }
