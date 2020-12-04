@@ -40,7 +40,7 @@ def get_versionlock():
             "version": Config.DEPLOYMENT_CLIENT_VERSION,
             "status": "FAILED",
             "message": "Failed to GET versionlock list",
-            "exception": str(e)
+            "exception": str(e),
         }
         app.logger.debug(response)
         return response, 409

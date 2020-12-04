@@ -52,8 +52,12 @@ def install_pkgs(packages):
     packages = " ".join(map(str, packages))
     app.logger.info("running os.system('sudo yum clean all')")
     os.system("sudo yum clean all")
-    app.logger.info(f"running sudo yum --enablerepo={Config.ENVIRONMENT} -y install {packages}")
-    stat = os.system(f"sudo yum --enablerepo={Config.ENVIRONMENT} -y install {packages}")
+    app.logger.info(
+        f"running sudo yum --enablerepo={Config.ENVIRONMENT} -y install {packages}"
+    )
+    stat = os.system(
+        f"sudo yum --enablerepo={Config.ENVIRONMENT} -y install {packages}"
+    )
     if stat != 0:
         raise Exception(stat)
 
@@ -78,7 +82,7 @@ def update_env(key, value):
                 env[k] = v
         env[key] = value
         os.environ[key] = value
-    except:
+    except Exception:
         raise Exception("Unable to process dclient environment file.")
 
     try:
@@ -89,7 +93,7 @@ def update_env(key, value):
                     f.write(line)
                 else:
                     f.write(line + "\n")
-    except:
+    except Exception:
         raise Exception("Unable to update dclient environment file.")
 
 

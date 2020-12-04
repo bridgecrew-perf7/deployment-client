@@ -7,7 +7,6 @@ from flask import request
 from flask import current_app as app
 
 
-
 def post_rollback():
     """Post Rollback Operation
 
