@@ -1,3 +1,22 @@
-#!/usr/bin/env groovy
+pipeline {
+    agent {
+        label 'primemirror'
+    }
+    stages {
+        stage('Setup Virtualenv') {
+            steps {
+                sh 'pipenv --rm'
+                sh 'pipenv install --dev'
+            }
+        }
 
-PythonProjectAsRPM( 'dclient' )
+        stage('Code Checks') {
+            steps {
+                sh 'pipenv check'
+                sh 'pipenv run black *.py'
+                sh 'pipenv run flake8'
+                sh 'safety check'
+            }
+        }
+    }
+}
