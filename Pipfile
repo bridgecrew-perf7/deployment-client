@@ -10,7 +10,6 @@ pylint = "==2.6.0"
 bandit = "==1.6.2"
 flake8 = "==3.8.4"
 typed-ast = "==1.4.1"
-safety = "==1.9.0"
 
 [packages]
 flask = "==1.1.2"
