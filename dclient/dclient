@@ -22,7 +22,7 @@ rotating_log_handeler = logging.handlers.RotatingFileHandler(
 )
 rotating_log_handeler.setFormatter(formatter)
 rotating_log_handeler.setLevel(logging.DEBUG)
-logging.getLogger("").addHandler(rotating_log_handeler)
+logging.getLogger("gunicorn.error").addHandler(rotating_log_handeler)
 
 
 class DClient(WSGIApplication):
@@ -51,6 +51,9 @@ def create_app():
     """
 
     app = Flask(__name__)
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
     app.config.from_object(Config)
 
     with app.app_context():
