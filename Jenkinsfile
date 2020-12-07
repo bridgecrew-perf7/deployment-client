@@ -10,10 +10,10 @@ pipeline {
             }
         }
 
-        stage('Code Checks') {
+        stage('Static Code Checks') {
             steps {
                 sh 'pipenv check'
-                sh 'pipenv run black *.py'
+                sh 'pipenv run black setup.py dclient/* tests/*'
                 sh 'pipenv run flake8'
             }
         }
