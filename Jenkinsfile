@@ -14,7 +14,7 @@ pipeline {
             steps {
                 sh 'pipenv check'
                 sh 'pipenv run black setup.py dclient/* tests/*'
-                sh 'pipenv run flake8'
+                sh 'pipenv run flake8 --ignore E501'
             }
         }
     }
