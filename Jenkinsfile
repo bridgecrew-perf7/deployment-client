@@ -13,7 +13,7 @@ pipeline {
         stage('Static Code Checks') {
             steps {
                 sh 'pipenv check'
-                sh 'pipenv run black setup.py dclient/* tests/*'
+                sh 'find . -name "*.py" -print0 | xargs -0 -I "{}" pipenv run black "{}"'
                 sh 'pipenv run flake8 --ignore E501'
             }
         }
