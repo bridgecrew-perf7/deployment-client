@@ -33,7 +33,7 @@ def get_config():
                     (k, v) = line.split("=", 1)
                     v = v.rstrip("\n")
                     config[k] = v
-                except:
+                except Exception:
                     pass
         return config
     else:
@@ -71,8 +71,10 @@ class Config(object):
     DEPLOYMENT_PROXY_HOSTNAME = get_var("DEPLOYMENT_PROXY_HOSTNAME")
     DEPLOYMENT_PROXY_PORT = get_var("DEPLOYMENT_PROXY_PORT")
     DEPLOYMENT_PROXY_VERSION = get_var("DEPLOYMENT_PROXY_VERSION")
-    DEPLOYMENT_API_URI = f"{DEPLOYMENT_PROXY_PROTOCOL}://{DEPLOYMENT_PROXY_HOSTNAME}:{DEPLOYMENT_PROXY_PORT}/api/{DEPLOYMENT_PROXY_VERSION}"
-
+    DEPLOYMENT_API_URI = (
+        f"{DEPLOYMENT_PROXY_PROTOCOL}://{DEPLOYMENT_PROXY_HOSTNAME}:"
+        f"{DEPLOYMENT_PROXY_PORT}/api/{DEPLOYMENT_PROXY_VERSION}"
+    )
     TOKEN = get_var("TOKEN")
     ENV_FILE = get_var("ENV_FILE")
     RETRY = get_var("RETRY")
