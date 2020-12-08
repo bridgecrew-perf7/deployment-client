@@ -18,7 +18,7 @@ class LastUpdated(OrderedDict):
 
 
 def not_installed(rpm):
-    #app.logger.debug(f"running rpm -q {rpm}")
+    app.logger.debug(f"running rpm -q {rpm}")
     stat = os.system(f"rpm -q {rpm}")
     if stat == 1:
         return True
@@ -27,7 +27,7 @@ def not_installed(rpm):
 
 
 def get_yum_transaction_id():
-    #app.logger.info("running subprocess.check_output(['sudo', 'yum', 'history', 'list''])")
+    app.logger.info("running subprocess.check_output(['sudo', 'yum', 'history', 'list''])")
     history_list = subprocess.check_output(["sudo", "yum", "history", "list"])
     history_list = history_list.splitlines()
     count = 0
@@ -50,16 +50,16 @@ def get_yum_transaction_id():
 
 def install_pkgs(packages):
     packages = " ".join(map(str, packages))
-    #app.logger.info("running os.system('sudo yum clean all')")
+    app.logger.info("running os.system('sudo yum clean all')")
     os.system("sudo yum clean all")
-    #app.logger.info(f"running sudo yum --enablerepo={Config.ENVIRONMENT} -y install {packages}")
+    app.logger.info(f"running sudo yum --enablerepo={Config.ENVIRONMENT} -y install {packages}")
     stat = os.system(f"sudo yum --enablerepo={Config.ENVIRONMENT} -y install {packages}")
     if stat != 0:
         raise Exception(stat)
 
 
 def restart_service(service):
-    #app.logger.info(f"running subprocess.Popen(['sudo', 'systemctl', 'restart', {service}])")
+    app.logger.info(f"running subprocess.Popen(['sudo', 'systemctl', 'restart', {service}])")
     subprocess.Popen(["sudo", "systemctl", "restart", service])
 
 
@@ -109,10 +109,10 @@ def set_state(state):
     http = get_http()
     r = http.patch(f"{Config.DEPLOYMENT_API_URI}/server", json=data)
     if r.status_code == 201:
-        #app.logger.debug(f"Successfully Updated State: {state}")
+        app.logger.debug(f"Successfully Updated State: {state}")
         return True
     else:
-        #app.logger.error(f"Failed to set state: {state}")
+        app.logger.error(f"Failed to set state: {state}")
         return False
 
 
@@ -137,7 +137,7 @@ def register_dclient():
     http = get_http()
     r = http.post(f"{Config.DEPLOYMENT_API_URI}/register", json=data)
     resp = r.json()
-    #app.logger.debug(f"REGISTER CLIENT: {resp}")
+    app.logger.debug(f"REGISTER CLIENT: {resp}")
     if "token" in resp:
         update_env("TOKEN", resp["token"])
         set_state("ACTIVE")
