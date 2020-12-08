@@ -4,13 +4,13 @@ import requests
 
 @pytest.fixture(scope="module")
 def base_url():
-    url = 'http://deployment-client.com:8003'
+    url = "http://deployment-client.com:8003"
     return url
 
 
 @pytest.fixture(scope="module")
 def proxy_url():
-    url = 'http://localhost.localdomain:8002/api/v1'
+    url = "http://localhost.localdomain:8002/api/v1"
     return url
 
 

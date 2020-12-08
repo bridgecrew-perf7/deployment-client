@@ -11,13 +11,18 @@ from gunicorn.app.wsgiapp import WSGIApplication
 
 import logging.handlers
 
-formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s")
+formatter = logging.Formatter(
+    "%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s"
+)
 
-rotating_log_handeler = logging.handlers.RotatingFileHandler(Config.LOG_FILE, maxBytes=int(Config.LOG_MAX_BYTES),
-                                                             backupCount=int(Config.LOG_BACKUP_COUNT))
+rotating_log_handeler = logging.handlers.RotatingFileHandler(
+    Config.LOG_FILE,
+    maxBytes=int(Config.LOG_MAX_BYTES),
+    backupCount=int(Config.LOG_BACKUP_COUNT),
+)
 rotating_log_handeler.setFormatter(formatter)
 rotating_log_handeler.setLevel(logging.DEBUG)
-logging.getLogger('').addHandler(rotating_log_handeler)
+logging.getLogger("gunicorn.error").addHandler(rotating_log_handeler)
 
 
 class DClient(WSGIApplication):
@@ -27,8 +32,11 @@ class DClient(WSGIApplication):
         super(WSGIApplication, self).__init__()
 
     def load_config(self):
-        config = {key: value for key, value in self.options.items()
-                  if key in self.cfg.settings and value is not None}
+        config = {
+            key: value
+            for key, value in self.options.items()
+            if key in self.cfg.settings and value is not None
+        }
         for key, value in config.items():
             self.cfg.set(key.lower(), value)
 
@@ -37,16 +45,19 @@ class DClient(WSGIApplication):
 
 
 def create_app():
-    """ Create the dclient app
+    """Create the dclient app
 
     :return: app
     """
 
     app = Flask(__name__)
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
     app.config.from_object(Config)
 
     with app.app_context():
-        if Config.TESTING:
+        if not Config.TESTING:
             if not Config.TOKEN:
                 register_dclient()
             else:
@@ -86,6 +97,6 @@ if __name__ == "__main__":
         "log-level": "debug",
         "capture-output": True,
         "worker_class": "sync",
-        "timeout": 600
+        "timeout": 600,
     }
     DClient(create_app(), options).run()
