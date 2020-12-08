@@ -26,7 +26,7 @@ setup(
         "requests",
         "flask",
         "gunicorn",
-	"connexion"
+	    "connexion"
     ],
     python_requires=">=3.6"
 )

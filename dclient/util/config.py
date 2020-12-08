@@ -63,6 +63,8 @@ class Config(object):
     DEPLOYMENT_CLIENT_IP = get_var("DEPLOYMENT_CLIENT_IP")
 
     STATE = get_var("STATE")
+    TESTING = bool(int(get_var("TESTING")))
+
     LOCATION = get_var("LOCATION")
     ENVIRONMENT = get_var("ENVIRONMENT")
     GROUP = get_var("GROUP")
