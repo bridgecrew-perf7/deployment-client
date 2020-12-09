@@ -1,2 +1,2 @@
 STATE=NEW
-TESTING=<0 or 1><1 = running only unit_tests and 0 = running only application >
+TESTING=0
