@@ -57,10 +57,11 @@ def create_app():
     app.config.from_object(Config)
 
     with app.app_context():
-        if not Config.TOKEN:
-            register_dclient()
-        else:
-            set_state("ACTIVE")
+        if not Config.TESTING:
+            if not Config.TOKEN:
+                register_dclient()
+            else:
+                set_state("ACTIVE")
 
         @app.route("/", methods=["GET"])
         def healthcheck():

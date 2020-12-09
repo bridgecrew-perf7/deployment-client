@@ -6,7 +6,7 @@ import os
 import re
 from dotenv import load_dotenv
 from collections import OrderedDict
-from subprocess import Popen, check_output
+import subprocess
 
 logger = logging.getLogger("dproxy-core")
 
@@ -29,8 +29,9 @@ def not_installed(rpm):
 
 
 def get_yum_transaction_id():
+
     logger.info("running check_output(['sudo', 'yum', 'history', 'list''])")
-    history_list = check_output(["sudo", "yum", "history", "list"])
+    history_list = subprocess.check_output(["sudo", "yum", "history", "list"])
     history_list = history_list.splitlines()
     count = 0
     fl = 0
@@ -66,7 +67,7 @@ def install_pkgs(packages):
 
 def restart_service(service):
     logger.info(f"running Popen(['sudo', 'systemctl', 'restart', {service}])")
-    Popen(["sudo", "systemctl", "restart", service])
+    subprocess.Popen(["sudo", "systemctl", "restart", service])
 
 
 def update_env(key, value):
